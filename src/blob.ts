@@ -66,11 +66,9 @@ export default class Blob {
 	toString() {
 		return '[object Blob]'
 	}
-	slice() {
+	slice(start: number | undefined, end: number | undefined, type: string) {
 		const size = this.size;
 
-		const start = arguments[0];
-		const end = arguments[1];
 		let relativeStart, relativeEnd;
 		if (start === undefined) {
 			relativeStart = 0;
@@ -93,7 +91,7 @@ export default class Blob {
 			relativeStart,
 			relativeStart + span
 		);
-		const blob = new Blob([], { type: arguments[2] });
+		const blob = new Blob([], { type });
 		blob[BUFFER] = slicedBuffer;
 		return blob;
 	}

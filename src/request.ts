@@ -7,16 +7,44 @@
  * All spec algorithm step numbers are based on https://fetch.spec.whatwg.org/commit-snapshots/ae716822cb3a61843226cd090eefc6589446c1d2/.
  */
 
-import {parse as parseUrl, format as formatUrl} from 'url';
+import {parse as parseUrl, format as formatUrl, UrlWithStringQuery} from 'url';
 import Stream from 'stream';
 import utf8 from 'utf8';
-import Headers from './headers';
-import Body, {clone, extractContentType, getTotalBytes} from './body';
+import Headers, { HeadersInit } from './headers';
+import Body, {clone, extractContentType, getTotalBytes, BodyInit} from './body';
 import {isAbortSignal} from './utils/is';
+import { Agent } from 'http';
 
 const INTERNALS = Symbol('Request internals');
 
 const streamDestructionSupported = 'destroy' in Stream.Readable.prototype;
+
+// export type BodyInit =
+// 	ArrayBuffer
+// 	| ArrayBufferView
+// 	| NodeJS.ReadableStream
+// 	| string
+// 	| URLSearchParams;
+
+export interface RequestInit {
+	counter?: number;
+	// whatwg/fetch standard options
+	body?: BodyInit | Body;
+	headers?: HeadersInit;
+	method?: string;
+	redirect?: RequestRedirect;
+	signal?: AbortSignal | null;
+
+	// node-fetch extensions
+	agent?: Agent | ((parsedUrl: URL) => Agent); // =null http.Agent instance, allows custom proxy, certificate etc.
+	compress?: boolean; // =true support gzip/deflate content encoding. false to disable
+	follow?: number; // =20 maximum redirect count. 0 to not follow redirect
+	size?: number; // =0 maximum response body size in bytes. 0 to disable
+	timeout?: number; // =0 req/res timeout in ms, it resets on redirect. 0 to disable (OS limit applies)
+	highWaterMark?: number; // =16384 the maximum number of bytes to store in the internal buffer before ceasing to read from the underlying resource.
+
+	// node-fetch does not support mode, cache or credentials options
+}
 
 /**
  * Check if `obj` is an instance of Request.
@@ -31,6 +59,7 @@ function isRequest(obj: any): obj is Request {
 	);
 }
 
+
 /**
  * Request class
  *
@@ -39,22 +68,41 @@ function isRequest(obj: any): obj is Request {
  * @return  Void
  */
 export default class Request {
-	constructor(input, init = {}) {
+	// node-fetch extensions to the whatwg/fetch spec
+	agent?: Agent | ((parsedUrl: URL) => Agent);
+	compress: boolean;
+	counter: number;
+	follow: number;
+	// hostname: string;
+	port?: number;
+	// protocol: string;
+	// size: number = 0;
+	timeout: number = 0;
+	highWaterMark?: number;
+	body: Body | null = null;
+	[INTERNALS]: {
+		method: string
+		parsedURL: UrlWithStringQuery
+		headers: Headers
+		redirect: string
+		signal: AbortSignal | null
+	}
+	constructor(input: string | { href: string } | Request, init: RequestInit = {}) {
 		let parsedURL;
 
 		// Normalize input and force URL to be encoded as UTF-8 (https://github.com/node-fetch/node-fetch/issues/245)
 		if (!isRequest(input)) {
-			if (input && input.href) {
+			if (typeof input === "string") {
+				// Coerce input to a string before attempting to parse
+				parsedURL = parseUrl(utf8.encode(`${input}`));
+			} else {
 				// In order to support Node.js' Url objects; though WHATWG's URL objects
 				// will fall into this branch also (since their `toString()` will return
 				// `href` property anyway)
 				parsedURL = parseUrl(utf8.encode(input.href));
-			} else {
-				// Coerce input to a string before attempting to parse
-				parsedURL = parseUrl(utf8.encode(`${input}`));
 			}
 
-			input = {};
+			input = {} as Request;
 		} else {
 			parsedURL = parseUrl(utf8.encode(input.url));
 		}
@@ -67,16 +115,21 @@ export default class Request {
 			throw new TypeError('Request with GET/HEAD method cannot have body');
 		}
 
-		const inputBody = init.body != null ?
-			init.body :
+		const inputBody = init.body ??
 			(isRequest(input) && input.body !== null ?
-				clone(input) :
+				clone(input.body) :
 				null);
 
-		Body.call(this, inputBody, {
-			timeout: init.timeout || input.timeout || 0,
-			size: init.size || input.size || 0
-		});
+		this.body = inputBody instanceof Body ? inputBody: new Body(inputBody);
+		// Body.call(this, inputBody, {
+		// 	timeout: init.timeout || input.timeout || 0,
+		// 	size: init.size || input.size || 0
+		// });
+
+		if(this.body){
+			this.body.timeout =  init.timeout || input.timeout || 0;
+			this.body.size = init.size || input.size || 0
+		}
 
 		const headers = new Headers(init.headers || input.headers || {});
 
@@ -90,7 +143,7 @@ export default class Request {
 		let signal = isRequest(input) ?
 			input.signal :
 			null;
-		if ('signal' in init) {
+		if (init.signal !== undefined) {
 			signal = init.signal;
 		}
 
@@ -100,6 +153,7 @@ export default class Request {
 
 		this[INTERNALS] = {
 			method,
+			// body,
 			redirect: init.redirect || input.redirect || 'follow',
 			headers,
 			parsedURL,
@@ -146,9 +200,52 @@ export default class Request {
 	clone() {
 		return new Request(this);
 	}
+
+
+
+	arrayBuffer(){
+		return this.body?.arrayBuffer()
+	}
+    blob(){
+		return this.body?.blob()
+	}
+    // get body(){
+	// 	return this.body?.body
+	// }
+    get bodyUsed(){
+		return this.body?.bodyUsed
+	}
+    buffer(){
+		return this.body?.buffer()
+	}
+    json(){
+		return this.body?.json()
+	}
+    get size() {
+		return this.body?.size
+	}
+    text(){
+		return this.body?.text()
+	}
+    // textConverted(){
+	// 	return this.body?.textConverted
+	// }
+    // get timeout() {
+	// 	return this.body?.timeout
+	// }
+
 }
 
-Body.mixIn(Request.prototype);
+// TODO MIXIN
+// Body.mixIn(Request.prototype);
+
+// export function applyMixins(derivedCtor: any, baseCtors: any[]) {
+//     baseCtors.forEach(baseCtor => {
+//         Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+//             Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name) as any);
+//         });
+//     });
+// }
 
 Object.defineProperty(Request.prototype, Symbol.toStringTag, {
 	value: 'Request',
@@ -172,7 +269,7 @@ Object.defineProperties(Request.prototype, {
  * @param   Request  A Request instance
  * @return  Object   The options object to be passed to http.request
  */
-export function getNodeRequestOptions(request) {
+export function getNodeRequestOptions(request: Request) {
 	const {parsedURL} = request[INTERNALS];
 	const headers = new Headers(request[INTERNALS].headers);
 
@@ -228,7 +325,7 @@ export function getNodeRequestOptions(request) {
 
 	let {agent} = request;
 	if (typeof agent === 'function') {
-		agent = agent(parsedURL);
+		agent = agent(parsedURL as any);
 	}
 
 	if (!headers.has('Connection') && !agent) {

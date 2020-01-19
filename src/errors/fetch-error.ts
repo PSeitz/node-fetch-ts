@@ -21,7 +21,7 @@ export default class FetchError extends Error {
 	[Symbol.toStringTag]: string = 'FetchError';
 	name: string = 'FetchError';
 
-	constructor(message: string, type: string, systemError?: {code: number}) {
+	constructor(message: string, type: string, systemError?: Error & {code: number}) {
 		super(message);
 
 		this.message = message;

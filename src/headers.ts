@@ -9,14 +9,14 @@ const invalidTokenRegex = /[^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
 const invalidHeaderCharRegex = /[^\t\u0020-\u007E\u0080-\u00FF]/;
 
 function validateName(name: string) {
-	name = `${name}`;
+	// name = `${name}`;
 	if (invalidTokenRegex.test(name) || name === '') {
 		throw new TypeError(`${name} is not a legal HTTP header name`);
 	}
 }
 
-function validateValue(value: string) {
-	value = `${value}`;
+function validateValue(value: any) {
+	// value = `${value}`;
 	if (invalidHeaderCharRegex.test(value)) {
 		throw new TypeError(`${value} is not a legal HTTP header value`);
 	}
@@ -40,15 +40,8 @@ function find(map: {}, name: string) {
 
 	return undefined;
 }
-// export type HeadersInit = Headers | string[][] | { [key: string]: string };
+export type HeadersInit = Headers | string[][] | Record<string, string>;
 
-// function name(params:{[Symbol.iterator]: () => IterableIterator<string[]>}) {
-	
-// }
-
-
-// name([["a", "b"]])
-export type HeadersInit = Headers | string[][] | { [key: string]: string };
 const MAP = Symbol('map');
 export default class Headers  implements Iterable<readonly [string, string]> {
 	[MAP]: {
@@ -110,6 +103,12 @@ export default class Headers  implements Iterable<readonly [string, string]> {
 				const value = init[key];
 				this.append(key, value);
 			}
+
+			// const init2: Record<string, string> = {};
+			// for (const key of Object.keys(init2)) {
+			// 	const value = init2[key];
+			// 	this.append(key, value);
+			// }
 		} else {
 			throw new TypeError('Provided initializer must be an object');
 		}
@@ -163,8 +162,8 @@ export default class Headers  implements Iterable<readonly [string, string]> {
 	 * @return  Void
 	 */
 	set(name: string, value: string) {
-		name = `${name}`;
-		value = `${value}`;
+		// name = `${name}`;
+		// value = `${value}`;
 		validateName(name);
 		validateValue(value);
 		const key = find(this[MAP], name);
@@ -179,8 +178,8 @@ export default class Headers  implements Iterable<readonly [string, string]> {
 	 * @return  Void
 	 */
 	append(name: string, value: string) {
-		name = `${name}`;
-		value = `${value}`;
+		// name = `${name}`;
+		// value = `${value}`;
 		validateName(name);
 		validateValue(value);
 		const key = find(this[MAP], name);
@@ -198,7 +197,7 @@ export default class Headers  implements Iterable<readonly [string, string]> {
 	 * @return  Boolean
 	 */
 	has(name: string) {
-		name = `${name}`;
+		// name = `${name}`;
 		validateName(name);
 		return find(this[MAP], name) !== undefined;
 	}
@@ -210,7 +209,7 @@ export default class Headers  implements Iterable<readonly [string, string]> {
 	 * @return  Void
 	 */
 	delete(name: string) {
-		name = `${name}`;
+		// name = `${name}`;
 		validateName(name);
 		const key = find(this[MAP], name);
 		if (key !== undefined) {

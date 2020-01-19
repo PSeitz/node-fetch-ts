@@ -1,8 +1,12 @@
 import * as http from 'http';
 import * as zlib from 'zlib';
-import {multipart as Multipart} from 'parted';
+// import {multipart as Multipart} from 'parted';
 
 export default class TestServer {
+	server: http.Server;
+	port: number;
+	hostname: string;
+	nextResponseHandler: any;
 	constructor() {
 		this.server = http.createServer(this.router);
 		this.port = 30001;
@@ -18,20 +22,20 @@ export default class TestServer {
 		});
 	}
 
-	start(cb) {
+	start(cb: () => void) {
 		this.server.listen(this.port, this.hostname, cb);
 	}
 
-	stop(cb) {
+	stop(cb: ((err?: Error | undefined) => void) | undefined) {
 		this.server.close(cb);
 	}
 
-	mockResponse(responseHandler) {
-		this.server.nextResponseHandler = responseHandler;
+	mockResponse(responseHandler: any) { // TODO
+		(this.server as any).nextResponseHandler = responseHandler;
 		return `http://${this.hostname}:${this.port}/mocked`;
 	}
 
-	router(req, res) {
+	router(req: any, res: any) {
 		const p = req.url;
 
 		if (p === '/mocked') {
@@ -333,7 +337,7 @@ export default class TestServer {
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'application/json');
 			let body = '';
-			req.on('data', c => {
+			req.on('data', (c: string) => {
 				body += c;
 			});
 			req.on('end', () => {
@@ -346,24 +350,24 @@ export default class TestServer {
 			});
 		}
 
-		if (p === '/multipart') {
-			res.statusCode = 200;
-			res.setHeader('Content-Type', 'application/json');
-			const parser = new Multipart(req.headers['content-type']);
-			let body = '';
-			parser.on('part', (field, part) => {
-				body += field + '=' + part;
-			});
-			parser.on('end', () => {
-				res.end(JSON.stringify({
-					method: req.method,
-					url: req.url,
-					headers: req.headers,
-					body
-				}));
-			});
-			req.pipe(parser);
-		}
+		// if (p === '/multipart') {
+		// 	res.statusCode = 200;
+		// 	res.setHeader('Content-Type', 'application/json');
+		// 	const parser = new Multipart(req.headers['content-type']);
+		// 	let body = '';
+		// 	parser.on('part', (field: string, part: string) => {
+		// 		body += field + '=' + part;
+		// 	});
+		// 	parser.on('end', () => {
+		// 		res.end(JSON.stringify({
+		// 			method: req.method,
+		// 			url: req.url,
+		// 			headers: req.headers,
+		// 			body
+		// 		}));
+		// 	});
+		// 	req.pipe(parser);
+		// }
 	}
 }
 

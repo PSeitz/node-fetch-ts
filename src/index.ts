@@ -15,9 +15,15 @@ import dataURIToBuffer from 'data-uri-to-buffer';
 import Body, {writeToStream, getTotalBytes} from './body';
 import Response from './response';
 import Headers, {createHeadersLenient} from './headers';
-import Request, {getNodeRequestOptions} from './request';
+import Request, {getNodeRequestOptions, RequestInit} from './request';
 import FetchError from './errors/fetch-error';
 import AbortError from './errors/abort-error';
+
+export type RequestInfo = string | Request;
+
+function getUrl(url: RequestInfo) {
+	return typeof url === "string"? url: url.url
+}
 
 /**
  * Fetch function
@@ -26,11 +32,13 @@ import AbortError from './errors/abort-error';
  * @param   Object   opts  Fetch options
  * @return  Promise
  */
-export default function fetch(url, opts) {
+export default async function fetch(reqInfo: RequestInfo, opts?: RequestInit): Promise<Response> {
 	// Allow custom promise
-	if (!fetch.Promise) {
-		throw new Error('native promise missing, set fetch.Promise to your favorite alternative');
-	}
+	// if (!fetch.Promise) {
+	// 	throw new Error('native promise missing, set fetch.Promise to your favorite alternative');
+	// }
+
+	const url = getUrl(reqInfo);
 
 	// Regex for data uri
 	const dataUriRegex = /^\s*data:([a-z]+\/[a-z]+(;[a-z-]+=[a-z-]+)?)?(;base64)?,[a-z0-9!$&',()*+,;=\-._~:@/?%\s]*\s*$/i;
@@ -39,26 +47,26 @@ export default function fetch(url, opts) {
 	if (dataUriRegex.test(url)) {
 		const data = dataURIToBuffer(url);
 		const res = new Response(data, {headers: {'Content-Type': data.type}});
-		return fetch.Promise.resolve(res);
+		return res;
 	}
 
 	// If invalid data uri
-	if (url.toString().startsWith('data:')) {
+	if (url.startsWith('data:')) {
 		const request = new Request(url, opts);
-		return fetch.Promise.reject(new FetchError(`[${request.method}] ${request.url} invalid URL`, 'system'));
+		throw new FetchError(`[${request.method}] ${request.url} invalid URL`, 'system');
 	}
 
-	Body.Promise = fetch.Promise;
+	// Body.Promise = fetch.Promise;
 
 	// Wrap http.request into fetch
-	return new fetch.Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		// Build request object
 		const request = new Request(url, opts);
 		const options = getNodeRequestOptions(request);
 
 		const send = (options.protocol === 'https:' ? https : http).request;
 		const {signal} = request;
-		let response = null;
+		let response: Response|null = null;
 
 		const abort = () => {
 			const error = new AbortError('The operation was aborted.');
@@ -71,7 +79,10 @@ export default function fetch(url, opts) {
 				return;
 			}
 
-			response.body.emit('error', error);
+			if (response.body && response.body instanceof Stream) {
+				response.body.emit('error', error);
+			}
+
 		};
 
 		if (signal && signal.aborted) {
@@ -86,7 +97,7 @@ export default function fetch(url, opts) {
 
 		// Send request
 		const req = send(options);
-		let reqTimeout;
+		let reqTimeout: NodeJS.Timeout;
 
 		if (signal) {
 			signal.addEventListener('abort', abortAndFinalize);
@@ -111,7 +122,7 @@ export default function fetch(url, opts) {
 		}
 
 		req.on('error', err => {
-			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, 'system', err));
+			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, 'system', err as any));
 			finalize();
 		});
 
@@ -139,7 +150,7 @@ export default function fetch(url, opts) {
 						if (locationURL !== null) {
 							// Handle corrupted header
 							try {
-								headers.set('Location', locationURL);
+								headers.set('Location', locationURL.toString()); // TODO CHECK toString
 							} catch (error) {
 								// istanbul ignore next: nodejs server prevent invalid response headers, we can't test this through normal request
 								reject(error);
@@ -169,7 +180,7 @@ export default function fetch(url, opts) {
 							agent: request.agent,
 							compress: request.compress,
 							method: request.method,
-							body: request.body,
+							body: request.body as Body | undefined,
 							signal: request.signal,
 							timeout: request.timeout
 						};
@@ -298,7 +309,7 @@ export default function fetch(url, opts) {
 			resolve(response);
 		});
 
-		writeToStream(req, request);
+		writeToStream(req, request.body);
 	});
 }
 
@@ -308,10 +319,8 @@ export default function fetch(url, opts) {
  * @param   Number   code  Status code
  * @return  Boolean
  */
-fetch.isRedirect = code => [301, 302, 303, 307, 308].includes(code);
+fetch.isRedirect = (code?:number) => code && [301, 302, 303, 307, 308].includes(code);
 
-// Expose Promise
-fetch.Promise = global.Promise;
 export {
 	Headers,
 	Request,

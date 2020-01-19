@@ -13,7 +13,8 @@ import {isBlob, isURLSearchParams, isArrayBuffer, isAbortError} from './utils/is
 
 const BODY_INTERNALS = Symbol('Body internals');
 
-type BodyTypes = Buffer | ArrayBuffer | Stream | ArrayBufferView | SharedArrayBuffer | FormData | null;
+export type BodyInit = ArrayBuffer | ArrayBufferView | Stream | string;
+export type BodyTypes = Buffer | BodyInit | SharedArrayBuffer | FormData | null;
 
 /**
  * Body mixin
@@ -268,38 +269,66 @@ Object.defineProperties(Body.prototype, {
 // };
 
 
-
 /**
  * Clone body given Res/Req instance
  *
  * @param   Mixed   instance       Response or Request instance
- * @param   String  highWaterMark  highWaterMark for both PassThrough body streams
+ * @param   number  highWaterMark  highWaterMark for both PassThrough body streams
  * @return  Mixed
  */
-export function clone(instance: any, highWaterMark: any) {
-	let p1;
-	let p2;
-	let {body} = instance;
+export function clone(body: Body, highWaterMark?: number) {
 
 	// Don't allow cloning a used body
-	if (instance.bodyUsed) {
+	if (body.bodyUsed) {
 		throw new Error('cannot clone body after it is used');
 	}
 
 	// Check that body is a stream and not form-data object
 	if ((body instanceof Stream) && !isFormData(body)) {
 		// Tee instance body
-		p1 = new PassThrough({highWaterMark});
-		p2 = new PassThrough({highWaterMark});
+		const p1 = new PassThrough({highWaterMark});
+		const p2 = new PassThrough({highWaterMark});
 		body.pipe(p1);
 		body.pipe(p2);
 		// Set instance body to teed body and return the other teed body
-		instance[BODY_INTERNALS].body = p1;
-		body = p2;
+		body[BODY_INTERNALS].body = p1;
+		body = p2 as any;
 	}
 
 	return body;
 }
+
+
+
+// /**
+//  * Clone body given Res/Req instance
+//  *
+//  * @param   Mixed   instance       Response or Request instance
+//  * @param   String  highWaterMark  highWaterMark for both PassThrough body streams
+//  * @return  Mixed
+//  */
+// export function clone(instance: any, highWaterMark?: any) {
+// 	let {body} = instance;
+
+// 	// Don't allow cloning a used body
+// 	if (instance.bodyUsed) {
+// 		throw new Error('cannot clone body after it is used');
+// 	}
+
+// 	// Check that body is a stream and not form-data object
+// 	if ((body instanceof Stream) && !isFormData(body)) {
+// 		// Tee instance body
+// 		const p1 = new PassThrough({highWaterMark});
+// 		const p2 = new PassThrough({highWaterMark});
+// 		body.pipe(p1);
+// 		body.pipe(p2);
+// 		// Set instance body to teed body and return the other teed body
+// 		instance[BODY_INTERNALS].body = p1;
+// 		body = p2;
+// 	}
+
+// 	return body;
+// }
 
 /**
  * Performs the operation "extract a `Content-Type` value from |object|" as
@@ -311,7 +340,7 @@ export function clone(instance: any, highWaterMark: any) {
  * @param {any} body Any options.body input
  * @returns {string | null}
  */
-export function extractContentType(body: BodyTypes) {
+export function extractContentType(body: BodyInit | Body) {
 	// Body is null or undefined
 	if (body == null) {
 		return null;
@@ -351,7 +380,7 @@ export function extractContentType(body: BodyTypes) {
 	return 'text/plain;charset=UTF-8';
 }
 
-function isFormData(obj:BodyTypes): obj is FormData {
+function isFormData(obj:any): obj is FormData {
 	return (obj as FormData).getBoundary !== undefined
 }
 
@@ -396,7 +425,7 @@ export function getTotalBytes({body}:any) {
  * @param obj.body Body object from the Body instance.
  * @returns {void}
  */
-export function writeToStream(dest: Stream.Writable, {body}: any) {
+export function writeToStream(dest: Stream.Writable, body: Body | null) {
 	if (body == null) {
 		// Body is null
 		dest.end();
@@ -407,8 +436,11 @@ export function writeToStream(dest: Stream.Writable, {body}: any) {
 		// Body is buffer
 		dest.write(body);
 		dest.end();
-	} else {
+	} else if (body instanceof Stream) {
 		// Body is stream
 		body.pipe(dest);
+	} else{
+		// Body is stream
+		dest.end();
 	}
 }
