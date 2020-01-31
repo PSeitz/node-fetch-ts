@@ -13,9 +13,9 @@
  * @return  AbortError
  */
 export default class AbortError extends Error {
-	type: string = 'aborted';
-	[Symbol.toStringTag]: string = 'AbortError';
-	name: string = 'AbortError';
+	type = 'aborted';
+	[Symbol.toStringTag] = 'AbortError';
+	name = 'AbortError';
 	constructor(message: string) {
 		super(message);
 		this.message = message;

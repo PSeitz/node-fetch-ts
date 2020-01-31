@@ -7,8 +7,8 @@ export const BUFFER = Symbol('buffer');
 const TYPE = Symbol('type');
 
 export default class Blob {
-	[TYPE] : string
-	[BUFFER] : Buffer
+	[TYPE]: string
+	[BUFFER]: Buffer
 	constructor(blobParts: any[], options?: {type: string}) {
 		this[TYPE] = '';
 
@@ -37,7 +37,7 @@ export default class Blob {
 
 		this[BUFFER] = Buffer.concat(buffers);
 
-		let type = options && options.type !== undefined && String(options.type).toLowerCase();
+		const type = options && options.type !== undefined && String(options.type).toLowerCase();
 		if (type && !/[^\u0020-\u007E]/.test(type)) {
 			this[TYPE] = type;
 		}
@@ -57,11 +57,11 @@ export default class Blob {
 		return Promise.resolve(ab);
 	}
 	stream() {
-		 const readable = new Readable();
-		 readable._read = () => {};
-		 readable.push(this[BUFFER]);
-		 readable.push(null);
-		 return readable;
+		const readable = new Readable();
+		readable._read = () => {};
+		readable.push(this[BUFFER]);
+		readable.push(null);
+		return readable;
 	}
 	toString() {
 		return '[object Blob]'

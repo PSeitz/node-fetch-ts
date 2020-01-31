@@ -38,40 +38,38 @@ describe("service/meta/deploy/esh/joinview", () => {
 
 })
 
-async function expect_throws(val1:Promise<any>) {
+async function expect_throws(val1: Promise<any>) {
 
     try{
         await val1
         throw new Error("expected to throw an error but didn't")
-    }catch(e){
-
-    }
+    }catch(e){ }
     // const jo = 
     // if(!val1){
     //     throw new Error(`${val1} ist not true`)
     // }
 }
 
-function expect_true(val1:boolean) {
+function expect_true(val1: boolean) {
     if(!val1){
         throw new Error(`${val1} ist not true`)
     }
 }
 
-function expect_type(val:boolean, type: string) {
+function expect_type(val: boolean, type: string) {
     const curr_type = typeof val;
     if(curr_type !== type){
         throw new Error(`expected ${val} to be ${type} but got ${curr_type}`)
     }
 }
 
-function expect_deep_equal<T>(val1:T, val2: T) {
+function expect_deep_equal<T>(val1: T, val2: T) {
     if(JSON.stringify(val1) !== JSON.stringify(val2)){ // TODO fix
         throw new Error(`${val1} does not equal ${val2}`)
     }
 }
 
-function assert_equal<T>(val1:T, val2: T) {
+function assert_equal<T>(val1: T, val2: T) {
     if(val1 !== val2){
         throw new Error(`${val1} does not equal ${val2}`)
     }

@@ -18,8 +18,8 @@ export default class FetchError extends Error {
 	errno?: number;
 	erroredSysCall?: {code: number};
 
-	[Symbol.toStringTag]: string = 'FetchError';
-	name: string = 'FetchError';
+	[Symbol.toStringTag] = 'FetchError';
+	name = 'FetchError';
 
 	constructor(message: string, type: string, systemError?: Error & {code: number}) {
 		super(message);

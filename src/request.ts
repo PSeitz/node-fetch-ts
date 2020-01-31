@@ -77,7 +77,7 @@ export default class Request {
 	port?: number;
 	// protocol: string;
 	// size: number = 0;
-	timeout: number = 0;
+	timeout = 0;
 	highWaterMark?: number;
 	body: Body | null = null;
 	[INTERNALS]: {

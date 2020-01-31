@@ -6,7 +6,7 @@
 
 import Body, {clone, extractContentType, BodyInit} from './body';
 import Headers, { HeadersInit } from './headers';
-const INTERNALS = Symbol('Response internals');
+// const INTERNALS = Symbol('Response internals');
 
 export interface ResponseInit {
 	headers?: HeadersInit;

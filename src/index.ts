@@ -319,7 +319,7 @@ export default async function fetch(reqInfo: RequestInfo, opts?: RequestInit): P
  * @param   Number   code  Status code
  * @return  Boolean
  */
-fetch.isRedirect = (code?:number) => code && [301, 302, 303, 307, 308].includes(code);
+fetch.isRedirect = (code?: number) => code && [301, 302, 303, 307, 308].includes(code);
 
 export {
 	Headers,

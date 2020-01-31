@@ -199,7 +199,7 @@ export default class Body{
 			}
 
 			// Handle stream errors
-			body2.on('error', (err:any) => {
+			body2.on('error', (err: any) => {
 				if (isAbortError(err)) {
 					// If the request was aborted, reject with this Error
 					abort = true;
@@ -380,7 +380,7 @@ export function extractContentType(body: BodyInit | Body) {
 	return 'text/plain;charset=UTF-8';
 }
 
-function isFormData(obj:any): obj is FormData {
+function isFormData(obj: any): obj is FormData {
 	return (obj as FormData).getBoundary !== undefined
 }
 
@@ -393,7 +393,7 @@ function isFormData(obj:any): obj is FormData {
  * @param {any} obj.body Body object from the Body instance.
  * @returns {number | null}
  */
-export function getTotalBytes({body}:any) {
+export function getTotalBytes({body}: any) {
 	// Body is null or undefined
 	if (body == null) {
 		return 0;

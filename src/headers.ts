@@ -45,7 +45,7 @@ export type HeadersInit = Headers | string[][] | Record<string, string>;
 const MAP = Symbol('map');
 export default class Headers  implements Iterable<readonly [string, string]> {
 	[MAP]: {
-		[index:string]: string[]
+		[index: string]: string[]
 	}
 	/**
 	 * Headers class
@@ -143,7 +143,7 @@ export default class Headers  implements Iterable<readonly [string, string]> {
 	 * @param   Boolean   thisArg   `this` context for callback function
 	 * @return  Void
 	 */
-	forEach(callback: (value: string, name: string, self:any) => void, thisArg = undefined) {
+	forEach(callback: (value: string, name: string, self: any) => void, thisArg = undefined) {
 		let pairs = getHeaders(this[MAP]);
 		let i = 0;
 		while (i < pairs.length) {
@@ -309,7 +309,7 @@ Object.defineProperties(Headers.prototype, {
 	entries: {enumerable: true}
 });
 
-function getHeaders(headers: {[index:string]: string[]}) {
+function getHeaders(headers: {[index: string]: string[]}) {
 	const keys = Object.keys(headers).sort();
 	return keys.map(k => [k.toLowerCase(), headers[k].join(', ')] as const)
 }
