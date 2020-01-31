@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AbortError } from "../..";
 import Blob from "../blob";
+import AbortError from "../errors/abort-error";
 /**
  * Is.js
  *
