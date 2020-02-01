@@ -14,14 +14,14 @@
  */
 export default class FetchError extends Error {
 	type: string;
-	code?: number;
-	errno?: number;
-	erroredSysCall?: {code: number};
+	code?: string;
+	errno?: string;
+	erroredSysCall?: {code?: string};
 
 	[Symbol.toStringTag] = 'FetchError';
 	name = 'FetchError';
 
-	constructor(message: string, type: string, systemError?: Error & {code: number}) {
+	constructor(message: string, type: string, systemError?: Error & {code?: string}) {
 		super(message);
 
 		this.message = message;

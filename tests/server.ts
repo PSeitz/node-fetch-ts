@@ -1,5 +1,5 @@
-import * as http from 'http';
-import * as zlib from 'zlib';
+import * as http from "http";
+import * as zlib from "zlib";
 // import {multipart as Multipart} from 'parted';
 
 export default class TestServer {
@@ -10,14 +10,14 @@ export default class TestServer {
 	constructor() {
 		this.server = http.createServer(this.router);
 		this.port = 30001;
-		this.hostname = 'localhost';
+		this.hostname = "localhost";
 		// Node 8 default keepalive timeout is 5000ms
 		// make it shorter here as we want to close server quickly at the end of tests
 		this.server.keepAliveTimeout = 1000;
-		this.server.on('error', err => {
+		this.server.on("error", err => {
 			console.log(err.stack);
 		});
-		this.server.on('connection', socket => {
+		this.server.on("connection", socket => {
 			socket.setTimeout(1500);
 		});
 	}
@@ -30,7 +30,8 @@ export default class TestServer {
 		this.server.close(cb);
 	}
 
-	mockResponse(responseHandler: any) { // TODO
+	mockResponse(responseHandler: any) {
+		// TODO
 		(this.server as any).nextResponseHandler = responseHandler;
 		return `http://${this.hostname}:${this.port}/mocked`;
 	}
@@ -38,52 +39,54 @@ export default class TestServer {
 	router(req: any, res: any) {
 		const p = req.url;
 
-		if (p === '/mocked') {
+		if (p === "/mocked") {
 			if (this.nextResponseHandler) {
 				this.nextResponseHandler(res);
 				this.nextResponseHandler = undefined;
 			} else {
-				throw new Error('No mocked response. Use \'TestServer.mockResponse()\'.');
+				throw new Error("No mocked response. Use 'TestServer.mockResponse()'.");
 			}
 		}
 
-		if (p === '/hello') {
+		if (p === "/hello") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.end('world');
+			res.setHeader("Content-Type", "text/plain");
+			res.end("world");
 		}
 
-		if (p === '/plain') {
+		if (p === "/plain") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.end('text');
+			res.setHeader("Content-Type", "text/plain");
+			res.end("text");
 		}
 
-		if (p === '/options') {
+		if (p === "/options") {
 			res.statusCode = 200;
-			res.setHeader('Allow', 'GET, HEAD, OPTIONS');
-			res.end('hello world');
+			res.setHeader("Allow", "GET, HEAD, OPTIONS");
+			res.end("hello world");
 		}
 
-		if (p === '/html') {
+		if (p === "/html") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/html');
-			res.end('<html></html>');
+			res.setHeader("Content-Type", "text/html");
+			res.end("<html></html>");
 		}
 
-		if (p === '/json') {
+		if (p === "/json") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'application/json');
-			res.end(JSON.stringify({
-				name: 'value'
-			}));
+			res.setHeader("Content-Type", "application/json");
+			res.end(
+				JSON.stringify({
+					name: "value"
+				})
+			);
 		}
 
-		if (p === '/gzip') {
+		if (p === "/gzip") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'gzip');
-			zlib.gzip('hello world', (err, buffer) => {
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "gzip");
+			zlib.gzip("hello world", (err, buffer) => {
 				if (err) {
 					throw err;
 				}
@@ -92,11 +95,11 @@ export default class TestServer {
 			});
 		}
 
-		if (p === '/gzip-truncated') {
+		if (p === "/gzip-truncated") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'gzip');
-			zlib.gzip('hello world', (err, buffer) => {
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "gzip");
+			zlib.gzip("hello world", (err, buffer) => {
 				if (err) {
 					throw err;
 				}
@@ -106,11 +109,11 @@ export default class TestServer {
 			});
 		}
 
-		if (p === '/gzip-capital') {
+		if (p === "/gzip-capital") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'GZip');
-			zlib.gzip('hello world', (err, buffer) => {
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "GZip");
+			zlib.gzip("hello world", (err, buffer) => {
 				if (err) {
 					throw err;
 				}
@@ -119,11 +122,11 @@ export default class TestServer {
 			});
 		}
 
-		if (p === '/deflate') {
+		if (p === "/deflate") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'deflate');
-			zlib.deflate('hello world', (err, buffer) => {
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "deflate");
+			zlib.deflate("hello world", (err, buffer) => {
 				if (err) {
 					throw err;
 				}
@@ -132,12 +135,12 @@ export default class TestServer {
 			});
 		}
 
-		if (p === '/brotli') {
+		if (p === "/brotli") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			if (typeof zlib.createBrotliDecompress === 'function') {
-				res.setHeader('Content-Encoding', 'br');
-				zlib.brotliCompress('hello world', (err, buffer) => {
+			res.setHeader("Content-Type", "text/plain");
+			if (typeof zlib.createBrotliDecompress === "function") {
+				res.setHeader("Content-Encoding", "br");
+				zlib.brotliCompress("hello world", (err, buffer) => {
 					if (err) {
 						throw err;
 					}
@@ -147,11 +150,11 @@ export default class TestServer {
 			}
 		}
 
-		if (p === '/deflate-raw') {
+		if (p === "/deflate-raw") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'deflate');
-			zlib.deflateRaw('hello world', (err, buffer) => {
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "deflate");
+			zlib.deflateRaw("hello world", (err, buffer) => {
 				if (err) {
 					throw err;
 				}
@@ -160,193 +163,195 @@ export default class TestServer {
 			});
 		}
 
-		if (p === '/sdch') {
+		if (p === "/sdch") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'sdch');
-			res.end('fake sdch string');
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "sdch");
+			res.end("fake sdch string");
 		}
 
-		if (p === '/invalid-content-encoding') {
+		if (p === "/invalid-content-encoding") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.setHeader('Content-Encoding', 'gzip');
-			res.end('fake gzip string');
+			res.setHeader("Content-Type", "text/plain");
+			res.setHeader("Content-Encoding", "gzip");
+			res.end("fake gzip string");
 		}
 
-		if (p === '/timeout') {
+		if (p === "/timeout") {
 			setTimeout(() => {
 				res.statusCode = 200;
-				res.setHeader('Content-Type', 'text/plain');
-				res.end('text');
+				res.setHeader("Content-Type", "text/plain");
+				res.end("text");
 			}, 1000);
 		}
 
-		if (p === '/slow') {
+		if (p === "/slow") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.write('test');
+			res.setHeader("Content-Type", "text/plain");
+			res.write("test");
 			setTimeout(() => {
-				res.end('test');
+				res.end("test");
 			}, 1000);
 		}
 
-		if (p === '/cookie') {
+		if (p === "/cookie") {
 			res.statusCode = 200;
-			res.setHeader('Set-Cookie', ['a=1', 'b=1']);
-			res.end('cookie');
+			res.setHeader("Set-Cookie", ["a=1", "b=1"]);
+			res.end("cookie");
 		}
 
-		if (p === '/size/chunk') {
+		if (p === "/size/chunk") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
+			res.setHeader("Content-Type", "text/plain");
 			setTimeout(() => {
-				res.write('test');
+				res.write("test");
 			}, 10);
 			setTimeout(() => {
-				res.end('test');
+				res.end("test");
 			}, 20);
 		}
 
-		if (p === '/size/long') {
+		if (p === "/size/long") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/plain');
-			res.end('testtest');
+			res.setHeader("Content-Type", "text/plain");
+			res.end("testtest");
 		}
 
-		if (p === '/redirect/301') {
+		if (p === "/redirect/301") {
 			res.statusCode = 301;
-			res.setHeader('Location', '/inspect');
+			res.setHeader("Location", "/inspect");
 			res.end();
 		}
 
-		if (p === '/redirect/302') {
+		if (p === "/redirect/302") {
 			res.statusCode = 302;
-			res.setHeader('Location', '/inspect');
+			res.setHeader("Location", "/inspect");
 			res.end();
 		}
 
-		if (p === '/redirect/303') {
+		if (p === "/redirect/303") {
 			res.statusCode = 303;
-			res.setHeader('Location', '/inspect');
+			res.setHeader("Location", "/inspect");
 			res.end();
 		}
 
-		if (p === '/redirect/307') {
+		if (p === "/redirect/307") {
 			res.statusCode = 307;
-			res.setHeader('Location', '/inspect');
+			res.setHeader("Location", "/inspect");
 			res.end();
 		}
 
-		if (p === '/redirect/308') {
+		if (p === "/redirect/308") {
 			res.statusCode = 308;
-			res.setHeader('Location', '/inspect');
+			res.setHeader("Location", "/inspect");
 			res.end();
 		}
 
-		if (p === '/redirect/chain') {
+		if (p === "/redirect/chain") {
 			res.statusCode = 301;
-			res.setHeader('Location', '/redirect/301');
+			res.setHeader("Location", "/redirect/301");
 			res.end();
 		}
 
-		if (p === '/redirect/no-location') {
+		if (p === "/redirect/no-location") {
 			res.statusCode = 301;
 			res.end();
 		}
 
-		if (p === '/redirect/slow') {
+		if (p === "/redirect/slow") {
 			res.statusCode = 301;
-			res.setHeader('Location', '/redirect/301');
+			res.setHeader("Location", "/redirect/301");
 			setTimeout(() => {
 				res.end();
 			}, 1000);
 		}
 
-		if (p === '/redirect/slow-chain') {
+		if (p === "/redirect/slow-chain") {
 			res.statusCode = 301;
-			res.setHeader('Location', '/redirect/slow');
+			res.setHeader("Location", "/redirect/slow");
 			setTimeout(() => {
 				res.end();
 			}, 10);
 		}
 
-		if (p === '/redirect/slow-stream') {
+		if (p === "/redirect/slow-stream") {
 			res.statusCode = 301;
-			res.setHeader('Location', '/slow');
+			res.setHeader("Location", "/slow");
 			res.end();
 		}
 
-		if (p === '/error/400') {
+		if (p === "/error/400") {
 			res.statusCode = 400;
-			res.setHeader('Content-Type', 'text/plain');
-			res.end('client error');
+			res.setHeader("Content-Type", "text/plain");
+			res.end("client error");
 		}
 
-		if (p === '/error/404') {
+		if (p === "/error/404") {
 			res.statusCode = 404;
-			res.setHeader('Content-Encoding', 'gzip');
+			res.setHeader("Content-Encoding", "gzip");
 			res.end();
 		}
 
-		if (p === '/error/500') {
+		if (p === "/error/500") {
 			res.statusCode = 500;
-			res.setHeader('Content-Type', 'text/plain');
-			res.end('server error');
+			res.setHeader("Content-Type", "text/plain");
+			res.end("server error");
 		}
 
-		if (p === '/error/reset') {
+		if (p === "/error/reset") {
 			res.destroy();
 		}
 
-		if (p === '/error/json') {
+		if (p === "/error/json") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'application/json');
-			res.end('invalid json');
+			res.setHeader("Content-Type", "application/json");
+			res.end("invalid json");
 		}
 
-		if (p === '/no-content') {
+		if (p === "/no-content") {
 			res.statusCode = 204;
 			res.end();
 		}
 
-		if (p === '/no-content/gzip') {
+		if (p === "/no-content/gzip") {
 			res.statusCode = 204;
-			res.setHeader('Content-Encoding', 'gzip');
+			res.setHeader("Content-Encoding", "gzip");
 			res.end();
 		}
 
-		if (p === '/no-content/brotli') {
+		if (p === "/no-content/brotli") {
 			res.statusCode = 204;
-			res.setHeader('Content-Encoding', 'br');
+			res.setHeader("Content-Encoding", "br");
 			res.end();
 		}
 
-		if (p === '/not-modified') {
+		if (p === "/not-modified") {
 			res.statusCode = 304;
 			res.end();
 		}
 
-		if (p === '/not-modified/gzip') {
+		if (p === "/not-modified/gzip") {
 			res.statusCode = 304;
-			res.setHeader('Content-Encoding', 'gzip');
+			res.setHeader("Content-Encoding", "gzip");
 			res.end();
 		}
 
-		if (p === '/inspect') {
+		if (p === "/inspect") {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'application/json');
-			let body = '';
-			req.on('data', (c: string) => {
+			res.setHeader("Content-Type", "application/json");
+			let body = "";
+			req.on("data", (c: string) => {
 				body += c;
 			});
-			req.on('end', () => {
-				res.end(JSON.stringify({
-					method: req.method,
-					url: req.url,
-					headers: req.headers,
-					body
-				}));
+			req.on("end", () => {
+				res.end(
+					JSON.stringify({
+						method: req.method,
+						url: req.url,
+						headers: req.headers,
+						body
+					})
+				);
 			});
 		}
 

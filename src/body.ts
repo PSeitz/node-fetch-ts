@@ -1,20 +1,24 @@
-
 /**
  * Body.js
  *
  * Body interface provides common methods for Request and Response
  */
 
-import Stream, {PassThrough} from 'stream';
-import FormData from 'form-data';
-import Blob from './blob';
-import FetchError from './errors/fetch-error';
-import {isBlob, isURLSearchParams, isArrayBuffer, isAbortError} from './utils/is';
+import Stream, { PassThrough } from 'stream'
+import FormData from 'form-data'
+import Blob from './blob'
+import FetchError from './errors/fetch-error'
+import {
+    isBlob,
+    isURLSearchParams,
+    isArrayBuffer,
+    isAbortError,
+} from './utils/is'
 
-const BODY_INTERNALS = Symbol('Body internals');
+const BODY_INTERNALS = Symbol('Body internals')
 
-export type BodyInit = ArrayBuffer | ArrayBufferView | Stream | string;
-export type BodyTypes = Buffer | BodyInit | SharedArrayBuffer | FormData | null;
+export type BodyInit = ArrayBuffer | ArrayBufferView | Stream | string
+export type BodyTypes = Buffer | BodyInit | SharedArrayBuffer | FormData | null
 
 /**
  * Body mixin
@@ -25,238 +29,264 @@ export type BodyTypes = Buffer | BodyInit | SharedArrayBuffer | FormData | null;
  * @param   Object  opts  Response options
  * @return  Void
  */
-export default class Body{
-	[BODY_INTERNALS]: {
-		body: BodyTypes,
-		disturbed: boolean,
-		error: FetchError | null
-	};
-	size: number;
-	timeout: number;
-	url?: string;
-	headers: any;
-	constructor(body: BodyTypes, {
-		size = 0,
-		timeout = 0
-	} = {}){
-		if (body == null) {
-			// Body is undefined or null
-			body = null;
-		} else if (isURLSearchParams(body)) {
-			// Body is a URLSearchParams
-			body = Buffer.from(body.toString());
-		} else if (isBlob(body)) {
-			// Body is blob
-		} else if (Buffer.isBuffer(body)) {
-			// Body is Buffer
-		} else if (isArrayBuffer(body)) {
-			// Body is ArrayBuffer
-			body = Buffer.from(body);
-		} else if (ArrayBuffer.isView(body)) {
-			// Body is ArrayBufferView
-			body = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-		} else if (body instanceof Stream) {
-			// Body is stream
-		} else {
-			// None of the above
-			// coerce to string then buffer
-			body = Buffer.from(String(body));
-		}
-	
-		this[BODY_INTERNALS] = {
-			body,
-			disturbed: false,
-			error: null
-		};
-		this.size = size;
-		this.timeout = timeout;
-	
-		if (body instanceof Stream) {
-			body.on('error', err => {
-				const error = isAbortError(err) ?
-					err :
-					new FetchError(`Invalid response body while trying to fetch ${this.url}: ${err.message}`, 'system', err);
-				this[BODY_INTERNALS].error = error;
-			});
-		}
-	}
+export default class Body {
+    [BODY_INTERNALS]: {
+        body: BodyTypes
+        disturbed: boolean
+        error: FetchError | null
+    }
+    size: number
+    timeout: number
+    url?: string
+    headers: any
+    constructor(body: BodyTypes, { size = 0, timeout = 0 } = {}) {
+        if (body == null) {
+            // Body is undefined or null
+            body = null
+        } else if (isURLSearchParams(body)) {
+            // Body is a URLSearchParams
+            body = Buffer.from(body.toString())
+        } else if (isBlob(body)) {
+            // Body is blob
+        } else if (Buffer.isBuffer(body)) {
+            // Body is Buffer
+        } else if (isArrayBuffer(body)) {
+            // Body is ArrayBuffer
+            body = Buffer.from(body)
+        } else if (ArrayBuffer.isView(body)) {
+            // Body is ArrayBufferView
+            body = Buffer.from(body.buffer, body.byteOffset, body.byteLength)
+        } else if (body instanceof Stream) {
+            // Body is stream
+        } else {
+            // None of the above
+            // coerce to string then buffer
+            body = Buffer.from(String(body))
+        }
 
-	get body() {
-		return this[BODY_INTERNALS].body;
-	}
+        this[BODY_INTERNALS] = {
+            body,
+            disturbed: false,
+            error: null,
+        }
+        this.size = size
+        this.timeout = timeout
 
-	get bodyUsed() {
-		return this[BODY_INTERNALS].disturbed;
-	}
+        if (body instanceof Stream) {
+            body.on('error', err => {
+                const error = isAbortError(err)
+                    ? err
+                    : new FetchError(
+                          `Invalid response body while trying to fetch ${this.url}: ${err.message}`,
+                          'system',
+                          err
+                      )
+                this[BODY_INTERNALS].error = error
+            })
+        }
+    }
 
-	/**
-	 * Decode response as ArrayBuffer
-	 *
-	 * @return  Promise
-	 */
-	async arrayBuffer() {
-		return this.consumeBody().then(({buffer, byteOffset, byteLength}) => buffer.slice(byteOffset, byteOffset + byteLength));
-	}
+    get body() {
+        return this[BODY_INTERNALS].body
+    }
 
-	/**
-	 * Return raw response as Blob
-	 *
-	 * @return Promise
-	 */
-	async blob() {
-		const int = this[BODY_INTERNALS];
-		const ct = this.headers && this.headers.get('content-type') || int.body && isBlob(int.body) && int.body.type || '';
-		const buf = await this.consumeBody()
-		return  new Blob([buf], { // TODO check constructor of blob
-			type: ct.toLowerCase()
-		});
-	}
+    get bodyUsed() {
+        return this[BODY_INTERNALS].disturbed
+    }
 
-	/**
-	 * Decode response as json
-	 *
-	 * @return  Promise
-	 */
-	async json() {
-		const buf = await this.consumeBody()
-		return JSON.parse(buf.toString());
-	}
+    /**
+     * Decode response as ArrayBuffer
+     *
+     * @return  Promise
+     */
+    async arrayBuffer() {
+        return this.consumeBody().then(({ buffer, byteOffset, byteLength }) =>
+            buffer.slice(byteOffset, byteOffset + byteLength)
+        )
+    }
 
-	/**
-	 * Decode response as text
-	 *
-	 * @return  Promise
-	 */
-	async text() {
-		const buf = await this.consumeBody()
-		return buf.toString();
-	}
+    /**
+     * Return raw response as Blob
+     *
+     * @return Promise
+     */
+    async blob() {
+        const int = this[BODY_INTERNALS]
+        const ct =
+            (this.headers && this.headers.get('content-type')) ||
+            (int.body && isBlob(int.body) && int.body.type) ||
+            ''
+        const buf = await this.consumeBody()
+        return new Blob([buf], {
+            // TODO check constructor of blob
+            type: ct.toLowerCase(),
+        })
+    }
 
-	/**
-	 * Decode response as buffer (non-spec api)
-	 *
-	 * @return  Promise
-	 */
-	buffer() {
-		return this.consumeBody();
-	}
+    /**
+     * Decode response as json
+     *
+     * @return  Promise
+     */
+    async json() {
+        const buf = await this.consumeBody()
+        return JSON.parse(buf.toString())
+    }
 
-	/**
-	 * Consume and convert an entire Body to a Buffer.
-	 *
-	 * Ref: https://fetch.spec.whatwg.org/#concept-body-consume-body
-	 *
-	 * @return  Promise
-	 */
-	async consumeBody() {
-		if (this[BODY_INTERNALS].disturbed) {
-			throw new TypeError(`body used already for: ${this.url}`)
-		}
+    /**
+     * Decode response as text
+     *
+     * @return  Promise
+     */
+    async text() {
+        const buf = await this.consumeBody()
+        return buf.toString()
+    }
 
-		this[BODY_INTERNALS].disturbed = true;
+    /**
+     * Decode response as buffer (non-spec api)
+     *
+     * @return  Promise
+     */
+    buffer() {
+        return this.consumeBody()
+    }
 
-		if (this[BODY_INTERNALS].error) {
-			throw this[BODY_INTERNALS].error
-		}
+    /**
+     * Consume and convert an entire Body to a Buffer.
+     *
+     * Ref: https://fetch.spec.whatwg.org/#concept-body-consume-body
+     *
+     * @return  Promise
+     */
+    async consumeBody() {
+        if (this[BODY_INTERNALS].disturbed) {
+            throw new TypeError(`body used already for: ${this.url}`)
+        }
 
-		let {body} = this;
+        this[BODY_INTERNALS].disturbed = true
 
-		// Body is null
-		if (body === null) {
-			return Buffer.alloc(0);
-		}
+        if (this[BODY_INTERNALS].error) {
+            throw this[BODY_INTERNALS].error
+        }
 
-		// Body is blob
-		if (isBlob(body)) {
-			body = body.stream();
-		}
+        let { body } = this
 
-		// Body is buffer
-		if (Buffer.isBuffer(body)) {
-			return body;
-		}
+        // Body is null
+        if (body === null) {
+            return Buffer.alloc(0)
+        }
 
-		// istanbul ignore if: should never happen
-		if (!(body instanceof Stream)) {
-			return Buffer.alloc(0);
-		}
-		const body2 = body;
-		// Body is stream
-		// get ready to actually consume the body
-		const accum: Uint8Array[] = [];
-		let accumBytes = 0;
-		let abort = false;
+        // Body is blob
+        if (isBlob(body)) {
+            body = body.stream()
+        }
 
-		await new Promise((resolve, reject) => {
-			let resTimeout: NodeJS.Timeout;
+        // Body is buffer
+        if (Buffer.isBuffer(body)) {
+            return body
+        }
 
-			// Allow timeout on slow response body
-			if (this.timeout) {
-				resTimeout = setTimeout(() => {
-					abort = true;
-					reject(new FetchError(`Response timeout while trying to fetch ${this.url} (over ${this.timeout}ms)`, 'body-timeout'));
-				}, this.timeout);
-			}
+        // istanbul ignore if: should never happen
+        if (!(body instanceof Stream)) {
+            return Buffer.alloc(0)
+        }
+        const body2 = body
+        // Body is stream
+        // get ready to actually consume the body
+        const accum: Uint8Array[] = []
+        let accumBytes = 0
+        let abort = false
 
-			// Handle stream errors
-			body2.on('error', (err: any) => {
-				if (isAbortError(err)) {
-					// If the request was aborted, reject with this Error
-					abort = true;
-					reject(err);
-				} else {
-					// Other errors, such as incorrect content-encoding
-					reject(new FetchError(`Invalid response body while trying to fetch ${this.url}: ${err.message}`, 'system', err));
-				}
-			});
+        await new Promise((resolve, reject) => {
+            let resTimeout: NodeJS.Timeout
 
-			body2.on('data', (chunk: any | null) => {
-				if (abort || chunk === null) {
-					return;
-				}
+            // Allow timeout on slow response body
+            if (this.timeout) {
+                resTimeout = setTimeout(() => {
+                    abort = true
+                    reject(
+                        new FetchError(
+                            `Response timeout while trying to fetch ${this.url} (over ${this.timeout}ms)`,
+                            'body-timeout'
+                        )
+                    )
+                }, this.timeout)
+            }
 
-				if (this.size && accumBytes + chunk.length > this.size) {
-					abort = true;
-					reject(new FetchError(`content size at ${this.url} over limit: ${this.size}`, 'max-size'));
-					return;
-				}
+            // Handle stream errors
+            body2.on('error', (err: any) => {
+                if (isAbortError(err)) {
+                    // If the request was aborted, reject with this Error
+                    abort = true
+                    reject(err)
+                } else {
+                    // Other errors, such as incorrect content-encoding
+                    reject(
+                        new FetchError(
+                            `Invalid response body while trying to fetch ${this.url}: ${err.message}`,
+                            'system',
+                            err
+                        )
+                    )
+                }
+            })
 
-				accumBytes += chunk.length;
-				accum.push(chunk);
-			});
+            body2.on('data', (chunk: any | null) => {
+                if (abort || chunk === null) {
+                    return
+                }
 
-			body2.on('end', () => {
-				if (abort) {
-					return;
-				}
+                if (this.size && accumBytes + chunk.length > this.size) {
+                    abort = true
+                    reject(
+                        new FetchError(
+                            `content size at ${this.url} over limit: ${this.size}`,
+                            'max-size'
+                        )
+                    )
+                    return
+                }
 
-				clearTimeout(resTimeout);
+                accumBytes += chunk.length
+                accum.push(chunk)
+            })
 
-				try {
-					resolve();
-				} catch (error) {
-					// Handle streams that have accumulated too much data (issue #414)
-					reject(new FetchError(`Could not create Buffer from response body for ${this.url}: ${error.message}`, 'system', error));
-				}
-			});
-		});
+            body2.on('end', () => {
+                if (abort) {
+                    return
+                }
 
+                clearTimeout(resTimeout)
 
-		return Buffer.concat(accum, accumBytes);
-	}
+                try {
+                    resolve()
+                } catch (error) {
+                    // Handle streams that have accumulated too much data (issue #414)
+                    reject(
+                        new FetchError(
+                            `Could not create Buffer from response body for ${this.url}: ${error.message}`,
+                            'system',
+                            error
+                        )
+                    )
+                }
+            })
+        })
+
+        return Buffer.concat(accum, accumBytes)
+    }
 }
-
-
 
 // In browsers, all properties are enumerable.
 Object.defineProperties(Body.prototype, {
-	body: {enumerable: true},
-	bodyUsed: {enumerable: true},
-	arrayBuffer: {enumerable: true},
-	blob: {enumerable: true},
-	json: {enumerable: true},
-	text: {enumerable: true}
-});
+    body: { enumerable: true },
+    bodyUsed: { enumerable: true },
+    arrayBuffer: { enumerable: true },
+    blob: { enumerable: true },
+    json: { enumerable: true },
+    text: { enumerable: true },
+})
 
 // Body.mixIn = proto => {
 // 	for (const name of Object.getOwnPropertyNames(Body.prototype)) {
@@ -268,7 +298,6 @@ Object.defineProperties(Body.prototype, {
 // 	}
 // };
 
-
 /**
  * Clone body given Res/Req instance
  *
@@ -277,28 +306,25 @@ Object.defineProperties(Body.prototype, {
  * @return  Mixed
  */
 export function clone(body: Body, highWaterMark?: number) {
+    // Don't allow cloning a used body
+    if (body.bodyUsed) {
+        throw new Error('cannot clone body after it is used')
+    }
 
-	// Don't allow cloning a used body
-	if (body.bodyUsed) {
-		throw new Error('cannot clone body after it is used');
-	}
+    // Check that body is a stream and not form-data object
+    if (body instanceof Stream && !isFormData(body)) {
+        // Tee instance body
+        const p1 = new PassThrough({ highWaterMark })
+        const p2 = new PassThrough({ highWaterMark })
+        body.pipe(p1)
+        body.pipe(p2)
+        // Set instance body to teed body and return the other teed body
+        body[BODY_INTERNALS].body = p1
+        body = p2 as any
+    }
 
-	// Check that body is a stream and not form-data object
-	if ((body instanceof Stream) && !isFormData(body)) {
-		// Tee instance body
-		const p1 = new PassThrough({highWaterMark});
-		const p2 = new PassThrough({highWaterMark});
-		body.pipe(p1);
-		body.pipe(p2);
-		// Set instance body to teed body and return the other teed body
-		body[BODY_INTERNALS].body = p1;
-		body = p2 as any;
-	}
-
-	return body;
+    return body
 }
-
-
 
 // /**
 //  * Clone body given Res/Req instance
@@ -341,47 +367,51 @@ export function clone(body: Body, highWaterMark?: number) {
  * @returns {string | null}
  */
 export function extractContentType(body: BodyInit | Body) {
-	// Body is null or undefined
-	if (body == null) {
-		return null;
-	}
+    // Body is null or undefined
+    if (body == null) {
+        return null
+    }
 
-	// Body is string
-	if (typeof body === 'string') {
-		return 'text/plain;charset=UTF-8';
-	}
+    // Body is string
+    if (typeof body === 'string') {
+        return 'text/plain;charset=UTF-8'
+    }
 
-	// Body is a URLSearchParams
-	if (isURLSearchParams(body)) {
-		return 'application/x-www-form-urlencoded;charset=UTF-8';
-	}
+    // Body is a URLSearchParams
+    if (isURLSearchParams(body)) {
+        return 'application/x-www-form-urlencoded;charset=UTF-8'
+    }
 
-	// Body is blob
-	if (isBlob(body)) {
-		return body.type || null;
-	}
+    // Body is blob
+    if (isBlob(body)) {
+        return body.type || null
+    }
 
-	// Body is a Buffer (Buffer, ArrayBuffer or ArrayBufferView)
-	if (Buffer.isBuffer(body) || isArrayBuffer(body) || ArrayBuffer.isView(body)) {
-		return null;
-	}
+    // Body is a Buffer (Buffer, ArrayBuffer or ArrayBufferView)
+    if (
+        Buffer.isBuffer(body) ||
+        isArrayBuffer(body) ||
+        ArrayBuffer.isView(body)
+    ) {
+        return null
+    }
 
-	// Detect form data input from form-data module
-	if (body && isFormData(body)) {
-		return `multipart/form-data;boundary=${body.getBoundary()}`;
-	}
+    // Detect form data input from form-data module
+    if (body && isFormData(body)) {
+        return `multipart/form-data;boundary=${body.getBoundary()}`
+    }
 
-	// Body is stream - can't really do much about this
-	if (body instanceof Stream) {
-		return null;
-	}
+    // Body is stream - can't really do much about this
+    if (body instanceof Stream) {
+        return null
+    }
 
-	// Body constructor defaults other things to string
-	return 'text/plain;charset=UTF-8';
+    // Body constructor defaults other things to string
+    return 'text/plain;charset=UTF-8'
 }
 
 function isFormData(obj: any): obj is FormData {
-	return (obj as FormData).getBoundary !== undefined
+    return (obj as FormData).getBoundary !== undefined
 }
 
 /**
@@ -393,29 +423,31 @@ function isFormData(obj: any): obj is FormData {
  * @param {any} obj.body Body object from the Body instance.
  * @returns {number | null}
  */
-export function getTotalBytes({body}: any) {
-	// Body is null or undefined
-	if (body == null) {
-		return 0;
-	}
+export function getTotalBytes({ body }: any) {
+    // Body is null or undefined
+    if (body == null) {
+        return 0
+    }
 
-	// Body is Blob
-	if (isBlob(body)) {
-		return body.size;
-	}
+    // Body is Blob
+    if (isBlob(body)) {
+        return body.size
+    }
 
-	// Body is Buffer
-	if (Buffer.isBuffer(body)) {
-		return body.length;
-	}
+    // Body is Buffer
+    if (Buffer.isBuffer(body)) {
+        return body.length
+    }
 
-	// Detect form data input from form-data module
-	if (body && typeof body.getLengthSync === 'function') {
-		return body.hasKnownLength && body.hasKnownLength() ? body.getLengthSync() : null;
-	}
+    // Detect form data input from form-data module
+    if (body && typeof body.getLengthSync === 'function') {
+        return body.hasKnownLength && body.hasKnownLength()
+            ? body.getLengthSync()
+            : null
+    }
 
-	// Body is stream
-	return null;
+    // Body is stream
+    return null
 }
 
 /**
@@ -426,21 +458,21 @@ export function getTotalBytes({body}: any) {
  * @returns {void}
  */
 export function writeToStream(dest: Stream.Writable, body: Body | null) {
-	if (body == null) {
-		// Body is null
-		dest.end();
-	} else if (isBlob(body)) {
-		// Body is Blob
-		body.stream().pipe(dest);
-	} else if (Buffer.isBuffer(body)) {
-		// Body is buffer
-		dest.write(body);
-		dest.end();
-	} else if (body instanceof Stream) {
-		// Body is stream
-		body.pipe(dest);
-	} else{
-		// Body is stream
-		dest.end();
-	}
+    if (body == null) {
+        // Body is null
+        dest.end()
+    } else if (isBlob(body)) {
+        // Body is Blob
+        body.stream().pipe(dest)
+    } else if (Buffer.isBuffer(body)) {
+        // Body is buffer
+        dest.write(body)
+        dest.end()
+    } else if (body instanceof Stream) {
+        // Body is stream
+        body.pipe(dest)
+    } else {
+        // Body is stream
+        dest.end()
+    }
 }

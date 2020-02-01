@@ -18,7 +18,7 @@
 		"test": "mocha -r ts-node/register tests/**/*.spec.ts",
 		"test_old": "cross-env BABEL_ENV=test mocha --require @babel/register --throw-deprecation test/test.js",
 		"report_old": "cross-env BABEL_ENV=coverage nyc --reporter lcov --reporter text mocha -R spec test/test.js",
-		"coverage": "cross-env BABEL_ENV=coverage nyc --reporter json --reporter text mocha -R spec test/test.js && codecov -f coverage/coverage-final.json",
+		"coverage_old": "cross-env BABEL_ENV=coverage nyc --reporter json --reporter text mocha -R spec test/test.js && codecov -f coverage/coverage-final.json",
 		"lint": "xo"
 	},
 	"repository": {
@@ -65,6 +65,7 @@
 		"nyc": "^15.0.0",
 		"parted": "^0.1.1",
 		"prettier": "^1.19.1",
+		"prettier-eslint": "^9.0.1",
 		"promise": "^8.0.3",
 		"resumer": "0.0.0",
 		"string-to-arraybuffer": "^1.0.2",
