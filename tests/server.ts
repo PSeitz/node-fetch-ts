@@ -1,5 +1,6 @@
 import * as http from "http";
 import * as zlib from "zlib";
+import { promisify } from "util";
 // import {multipart as Multipart} from 'parted';
 
 export default class TestServer {
@@ -22,12 +23,16 @@ export default class TestServer {
 		});
 	}
 
-	start(cb: () => void) {
-		this.server.listen(this.port, this.hostname, cb);
+	start() {
+		return new Promise(resolve =>
+			this.server.listen(this.port, this.hostname, resolve)
+		);
 	}
 
-	stop(cb: ((err?: Error | undefined) => void) | undefined) {
-		this.server.close(cb);
+	stop() {
+		return promisify(this.server.close);
+		// return new Promise(resolve => this.server.close(resolve));
+		// this.server.close(cb);
 	}
 
 	mockResponse(responseHandler: any) {
@@ -376,9 +381,9 @@ export default class TestServer {
 	}
 }
 
-if (require.main === module) {
-	const server = new TestServer();
-	server.start(() => {
-		console.log(`Server started listening at port ${server.port}`);
-	});
-}
+// if (require.main === module) {
+// 	const server = new TestServer();
+// 	server.start(() => {
+// 		console.log(`Server started listening at port ${server.port}`);
+// 	});
+// }

@@ -12,14 +12,11 @@ export default class Blob {
     constructor(blobParts: any[], options?: { type: string }) {
         this[TYPE] = ''
 
-        const buffers: Buffer[] = []
+        const buffers: Buffer[] = [];
 
         if (blobParts) {
-            const a = blobParts
-            const length = Number(a.length)
-            for (let i = 0; i < length; i++) {
-                const element = a[i]
-                let buffer
+            for (const element of blobParts) {
+                let buffer;
                 if (element instanceof Buffer) {
                     buffer = element
                 } else if (ArrayBuffer.isView(element)) {

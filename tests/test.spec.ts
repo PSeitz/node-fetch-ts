@@ -1,158 +1,299 @@
 import fetch, { FetchError, Headers, Request, Response } from "../src/index";
 import * as stream from "stream";
+import "./extend_jest";
 import TestServer from "./server";
-import { expect } from "chai";
 
 const local = new TestServer();
 const base = `http://${local.hostname}:${local.port}/`;
 
-before(done => {
-	local.start(done);
-});
+beforeAll(async () => local.start());
+afterAll(async () => local.stop());
 
-after(done => {
-	local.stop(done);
-});
-const itIf = (val: any) => (val ? it : it.skip);
+const testIf = (val: any) => (val ? test : test.skip);
 
-describe("service/meta/deploy/esh/joinview", () => {
-	it("should return a promise", () => {
+// declare global {
+// 	// eslint-disable-next-line @typescript-eslint/no-namespace
+// 	namespace jest {
+// 		interface Matchers<R> {
+// 			toBeType(value: string): CustomMatcherResult;
+// 			// toHaveErrorMessage(value: string): CustomMatcherResult;
+// 		}
+// 	}
+// }
+
+// expect.extend({
+// 	toBeType(received, argument) {
+// 		const initialType = typeof received;
+// 		const type =
+// 			initialType === "object"
+// 				? Array.isArray(received)
+// 					? "array"
+// 					: initialType
+// 				: initialType;
+// 		if (type === argument) {
+// 			return {
+// 				message: () => `expected ${received} to be type ${argument}`,
+// 				pass: true
+// 			};
+// 		} else {
+// 			return {
+// 				message: () => `expected ${received} to be type ${argument}`,
+// 				pass: false
+// 			};
+// 		}
+// 	}
+// });
+
+// expect.extend({
+// 	toHaveErrorMessage(received, argument) {
+// 		try {
+// 			received;
+// 			// throw new Error("expected to throw an error but didn't")
+// 		} catch (e) {
+// 			if (e.message === argument) {
+// 				return {
+// 					message: () => `expected error message ${received} to be ${argument}`,
+// 					pass: true
+// 				};
+// 			} else {
+// 				return {
+// 					message: () => `expected error message ${received} to be ${argument}`,
+// 					pass: false
+// 				};
+// 			}
+// 		}
+// 		return {
+// 			message: () =>
+// 				`expected error message ${received}, but not error was thrown`,
+// 			pass: false
+// 		};
+// 	}
+// });
+
+describe("test things", () => {
+	test("should return a promise", () => {
 		const url = `${base}hello`;
 		const p = fetch(url);
-		expect(p).to.be.an.instanceof(Promise);
-		expect(p).to.have.property("then");
+		expect(p).toBeInstanceOf(Promise);
+		expect(p).toHaveProperty("then");
 	});
 
-	it("should accept json response", async () => {
+	test("should accept json response", async () => {
 		const url = `${base}json`;
 		const res = await fetch(url);
-		// expect(res.headers.get('content-type')).to.equal('application/json');
-		assert_equal(res.headers.get("content-type"), "application/json");
+		expect(res.headers.get("content-type")).toEqual("application/json");
 		const result = await res.json();
-		expect_true(res.bodyUsed);
-		expect_type(result, "object");
-		// expect(result).to.be.an('object');
-		// expect(result).to.deep.equal();
-		expect_deep_equal(result, { name: "value" });
+		expect(res.bodyUsed).toBeTruthy();
+		expect(result).toBeType("object");
+		expect(result).toEqual({ name: "value" });
 
-		await expect_error(Promise.reject("no"));
+		// expect.assertions(1);
+		expect(Promise.reject("no")).rejects.toEqual("no");
 	});
 
-	it("should support proper toString output for Headers, Response and Request objects", () => {
-		expect(new Headers().toString()).to.equal("[object Headers]");
-		expect(new Response().toString()).to.equal("[object Response]");
-		expect(new Request(base).toString()).to.equal("[object Request]");
+	test("should support proper toString output for Headers, Response and Request objects", () => {
+		expect(new Headers().toString()).toEqual("[object Headers]");
+		expect(new Response().toString()).toEqual("[object Response]");
+		expect(new Request(base).toString()).toEqual("[object Request]");
 	});
 
-	it("should reject with error if url is protocol relative", () => {
+	test("should reject with error if url is protocol relative", () => {
 		const url = "//example.com/";
-		expect_error(fetch(url), "Only absolute URLs are supported");
+		expect(fetch(url)).rejects.toEqual(
+			new TypeError("Only absolute URLs are supported")
+		);
 	});
 
-	it("should reject with error if url is relative path", () => {
+	test("should reject with error if url is relative path", () => {
 		const url = "/some/path";
-		return expect_error(fetch(url), "Only absolute URLs are supported");
+		expect(fetch(url)).rejects.toEqual(
+			new TypeError("Only absolute URLs are supported")
+		);
 	});
 
-	it("should reject with error if protocol is unsupported", () => {
+	test("should reject with error if protocol is unsupported", () => {
 		const url = "ftp://example.com/";
-		return expect_error(fetch(url), "Only HTTP(S) protocols are supported");
+		expect(fetch(url)).rejects.toEqual(
+			new TypeError("Only HTTP(S) protocols are supported")
+		);
 	});
 
-	itIf(process.platform !== "win32")(
+	testIf(process.platform !== "win32")(
 		"should reject with error on network failure",
 		async () => {
 			const url = "http://localhost:50000/";
-			const e: FetchError = await expect_error(fetch(url));
-			assert_equal(e.type, "system");
-			assert_equal(e.code, "ECONNREFUSED");
-			assert_equal(e.errno, "ECONNREFUSED");
-			expect_exist(e.erroredSysCall);
+			expect(fetch(url)).rejects.toMatchObject({
+				type: "system",
+				code: "ECONNREFUSED",
+				errno: "ECONNREFUSED"
+			});
+			// expect_exist(e.erroredSysCall);
 		}
 	);
 
-	it("error should contain system error if one occurred", () => {
+	test("error should contain system error if one occurred", () => {
 		const err = new FetchError("a message", "system", new Error("an error"));
-		return expect(err).to.have.property("erroredSysCall");
+		return expect(err).toHaveProperty("erroredSysCall");
 	});
 
-	it("error should not contain system error if none occurred", () => {
+	test("error should not contain system error if none occurred", () => {
 		const err = new FetchError("a message", "a type");
-		return expect(err).to.not.have.property("erroredSysCall");
+		return expect(err).not.toHaveProperty("erroredSysCall");
 	});
 
-	it("should resolve into response", () => {
+	test("should resolve into response", () => {
 		const url = `${base}hello`;
 		return fetch(url).then(res => {
-			expect(res).to.be.an.instanceof(Response);
-			expect(res.headers).to.be.an.instanceof(Headers);
-			// expect(res.body).to.be.an.instanceof(stream.Transform);
-			expect(res.bodyUsed).to.be.false;
+			expect(res).toBeInstanceOf(Response);
+			expect(res.headers).toBeInstanceOf(Headers);
+			// expect(res.body).toBeInstanceOf(stream.Transform);
+			expect(res.bodyUsed).toBeFalsy();
 
-			expect(res.url).to.equal(url);
-			expect(res.ok).to.be.true;
-			expect(res.status).to.equal(200);
-			expect(res.statusText).to.equal("OK");
+			expect(res.url).toEqual(url);
+			expect(res.ok).toBeTruthy();
+			expect(res.status).toEqual(200);
+			expect(res.statusText).toEqual("OK");
 		});
 	});
+
+	test("should accept plain text response", () => {
+		const url = `${base}plain`;
+		return fetch(url).then(res => {
+			expect(res.headers.get("content-type")).toEqual("text/plain");
+			return res.text().then(result => {
+				expect(res.bodyUsed).toBeTruthy();
+				expect(result).toBeType("string");
+				expect(result).toEqual("text");
+			});
+		});
+	});
+
+	test("should accept html response (like plain text)", () => {
+		const url = `${base}html`;
+		return fetch(url).then(res => {
+			expect(res.headers.get("content-type")).toEqual("text/html");
+			return res.text().then(result => {
+				expect(res.bodyUsed).toBeTruthy();
+				expect(result).toBeType("string");
+				expect(result).toEqual("<html></html>");
+			});
+		});
+	});
+
+	test("should accept json response", () => {
+		const url = `${base}json`;
+		return fetch(url).then(res => {
+			expect(res.headers.get("content-type")).toEqual("application/json");
+			return res.json().then(result => {
+				expect(res.bodyUsed).toBeTruthy();
+				expect(result).toBeType("object");
+				expect(result).toEqual({ name: "value" });
+			});
+		});
+	});
+
+	test("should send request with custom headers", () => {
+		const url = `${base}inspect`;
+		const opts = {
+			headers: { "x-custom-header": "abc" }
+		};
+		return fetch(url, opts)
+			.then(res => {
+				return res.json();
+			})
+			.then(res => {
+				expect(res.headers["x-custom-header"]).toEqual("abc");
+			});
+	});
+
+	test("should accept headers instance", async () => {
+		const url = `${base}inspect`;
+		const opts = {
+			headers: new Headers({ "x-custom-header": "abc" })
+		};
+		const res = await (await fetch(url, opts)).json();
+		// await res.json();
+		expect(res.headers["x-custom-header"]).toEqual("abc");
+	});
+
+	test("should accept custom host header", () => {
+		const url = `${base}inspect`;
+		const opts = {
+			headers: {
+				host: "example.com"
+			}
+		};
+		return fetch(url, opts)
+			.then(res => {
+				return res.json();
+			})
+			.then(res => {
+				expect(res.headers.host).toEqual("example.com");
+			});
+	});
+
+	test("should accept custom HoSt header", () => {
+		const url = `${base}inspect`;
+		const opts = {
+			headers: {
+				HoSt: "example.com"
+			}
+		};
+		return fetch(url, opts)
+			.then(res => {
+				return res.json();
+			})
+			.then(res => {
+				expect(res.headers.host).toEqual("example.com");
+			});
+	});
+
+	// test("should follow redirect code 301", () => {
+	// 	const url = `${base}redirect/301`;
+	// 	return fetch(url).then(res => {
+	// 		expect(res.url).toEqual(`${base}inspect`);
+	// 		expect(res.status).toEqual(200);
+	// 		expect(res.ok).toBeTruthy;
+	// 	});
+	// });
+
+	// test("should follow redirect code 302", () => {
+	// 	const url = `${base}redirect/302`;
+	// 	return fetch(url).then(res => {
+	// 		expect(res.url).toEqual(`${base}inspect`);
+	// 		expect(res.status).toEqual(200);
+	// 	});
+	// });
+
+	// test("should follow redirect code 303", () => {
+	// 	const url = `${base}redirect/303`;
+	// 	return fetch(url).then(res => {
+	// 		expect(res.url).toEqual(`${base}inspect`);
+	// 		expect(res.status).toEqual(200);
+	// 	});
+	// });
+
+	// test("should follow redirect code 307", () => {
+	// 	const url = `${base}redirect/307`;
+	// 	return fetch(url).then(res => {
+	// 		expect(res.url).toEqual(`${base}inspect`);
+	// 		expect(res.status).toEqual(200);
+	// 	});
+	// });
+
+	// test("should follow redirect code 308", () => {
+	// 	const url = `${base}redirect/308`;
+	// 	return fetch(url).then(res => {
+	// 		expect(res.url).toEqual(`${base}inspect`);
+	// 		expect(res.status).toEqual(200);
+	// 	});
+	// });
+
+	// test("should follow redirect chain", () => {
+	// 	const url = `${base}redirect/chain`;
+	// 	return fetch(url).then(res => {
+	// 		expect(res.url).toEqual(`${base}inspect`);
+	// 		expect(res.status).toEqual(200);
+	// 	});
+	// });
 });
-
-async function expect_error(val1: Promise<any>, message?: string) {
-	try {
-		await val1;
-		throw new Error("expected to throw an error but didn't");
-	} catch (e) {
-		if (message) {
-			assert_equal(e.message, message);
-		}
-		return e;
-	}
-	// const jo =
-	// if(!val1){
-	//     throw new Error(`${val1} ist not true`)
-	// }
-}
-
-// async function expect_throws(val1: Promise<any>) {
-
-//     try{
-//         await val1
-//         throw new Error("expected to throw an error but didn't")
-//     }catch(e){ }
-//     // const jo =
-//     // if(!val1){
-//     //     throw new Error(`${val1} ist not true`)
-//     // }
-// }
-
-function expect_true(val1: boolean) {
-	if (!val1) {
-		throw new Error(`${val1} ist not true`);
-	}
-}
-
-function expect_type(val: boolean, type: string) {
-	const curr_type = typeof val;
-	if (curr_type !== type) {
-		throw new Error(`expected ${val} to be ${type} but got ${curr_type}`);
-	}
-}
-
-function expect_deep_equal<T>(val1: T, val2: T) {
-	if (JSON.stringify(val1) !== JSON.stringify(val2)) {
-		// TODO fix
-		throw new Error(`${val1} does not equal ${val2}`);
-	}
-}
-
-function assert_equal<T>(val1: T, val2: T) {
-	if (val1 !== val2) {
-		throw new Error(`${val1} does not equal ${val2}`);
-	}
-}
-
-function expect_exist<T>(val1: T) {
-	if (!val1) {
-		throw new Error(`${val1} does not exist`);
-	}
-}

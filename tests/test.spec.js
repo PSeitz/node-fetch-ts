@@ -63,157 +63,7 @@ const itIf = val => val ? it : it.skip;
 describe('node-fetch', () => {
 
 
-	it('should resolve into response', () => {
-		const url = `${base}hello`;
-		return fetch(url).then(res => {
-			expect(res).to.be.an.instanceof(Response);
-			expect(res.headers).to.be.an.instanceof(Headers);
-			expect(res.body).to.be.an.instanceof(stream.Transform);
-			expect(res.bodyUsed).to.be.false;
-
-			expect(res.url).to.equal(url);
-			expect(res.ok).to.be.true;
-			expect(res.status).to.equal(200);
-			expect(res.statusText).to.equal('OK');
-		});
-	});
-
-	it('should accept plain text response', () => {
-		const url = `${base}plain`;
-		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
-			return res.text().then(result => {
-				expect(res.bodyUsed).to.be.true;
-				expect(result).to.be.a('string');
-				expect(result).to.equal('text');
-			});
-		});
-	});
-
-	it('should accept html response (like plain text)', () => {
-		const url = `${base}html`;
-		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/html');
-			return res.text().then(result => {
-				expect(res.bodyUsed).to.be.true;
-				expect(result).to.be.a('string');
-				expect(result).to.equal('<html></html>');
-			});
-		});
-	});
-
-	it('should accept json response', () => {
-		const url = `${base}json`;
-		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('application/json');
-			return res.json().then(result => {
-				expect(res.bodyUsed).to.be.true;
-				expect(result).to.be.an('object');
-				expect(result).to.deep.equal({name: 'value'});
-			});
-		});
-	});
-
-	it('should send request with custom headers', () => {
-		const url = `${base}inspect`;
-		const opts = {
-			headers: {'x-custom-header': 'abc'}
-		};
-		return fetch(url, opts).then(res => {
-			return res.json();
-		}).then(res => {
-			expect(res.headers['x-custom-header']).to.equal('abc');
-		});
-	});
-
-	it('should accept headers instance', () => {
-		const url = `${base}inspect`;
-		const opts = {
-			headers: new Headers({'x-custom-header': 'abc'})
-		};
-		return fetch(url, opts).then(res => {
-			return res.json();
-		}).then(res => {
-			expect(res.headers['x-custom-header']).to.equal('abc');
-		});
-	});
-
-	it('should accept custom host header', () => {
-		const url = `${base}inspect`;
-		const opts = {
-			headers: {
-				host: 'example.com'
-			}
-		};
-		return fetch(url, opts).then(res => {
-			return res.json();
-		}).then(res => {
-			expect(res.headers.host).to.equal('example.com');
-		});
-	});
-
-	it('should accept custom HoSt header', () => {
-		const url = `${base}inspect`;
-		const opts = {
-			headers: {
-				HoSt: 'example.com'
-			}
-		};
-		return fetch(url, opts).then(res => {
-			return res.json();
-		}).then(res => {
-			expect(res.headers.host).to.equal('example.com');
-		});
-	});
-
-	it('should follow redirect code 301', () => {
-		const url = `${base}redirect/301`;
-		return fetch(url).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
-			expect(res.ok).to.be.true;
-		});
-	});
-
-	it('should follow redirect code 302', () => {
-		const url = `${base}redirect/302`;
-		return fetch(url).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
-		});
-	});
-
-	it('should follow redirect code 303', () => {
-		const url = `${base}redirect/303`;
-		return fetch(url).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
-		});
-	});
-
-	it('should follow redirect code 307', () => {
-		const url = `${base}redirect/307`;
-		return fetch(url).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
-		});
-	});
-
-	it('should follow redirect code 308', () => {
-		const url = `${base}redirect/308`;
-		return fetch(url).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
-		});
-	});
-
-	it('should follow redirect chain', () => {
-		const url = `${base}redirect/chain`;
-		return fetch(url).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
-		});
-	});
+	
 
 	it('should follow POST request redirect code 301 with GET', () => {
 		const url = `${base}redirect/301`;
@@ -222,11 +72,11 @@ describe('node-fetch', () => {
 			body: 'a=1'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 			return res.json().then(result => {
-				expect(result.method).to.equal('GET');
-				expect(result.body).to.equal('');
+				expect(result.method).toEqual('GET');
+				expect(result.body).toEqual('');
 			});
 		});
 	});
@@ -238,11 +88,11 @@ describe('node-fetch', () => {
 			body: 'a=1'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 			return res.json().then(res => {
-				expect(res.method).to.equal('PATCH');
-				expect(res.body).to.equal('a=1');
+				expect(res.method).toEqual('PATCH');
+				expect(res.body).toEqual('a=1');
 			});
 		});
 	});
@@ -254,11 +104,11 @@ describe('node-fetch', () => {
 			body: 'a=1'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 			return res.json().then(result => {
-				expect(result.method).to.equal('GET');
-				expect(result.body).to.equal('');
+				expect(result.method).toEqual('GET');
+				expect(result.body).toEqual('');
 			});
 		});
 	});
@@ -270,11 +120,11 @@ describe('node-fetch', () => {
 			body: 'a=1'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 			return res.json().then(res => {
-				expect(res.method).to.equal('PATCH');
-				expect(res.body).to.equal('a=1');
+				expect(res.method).toEqual('PATCH');
+				expect(res.body).toEqual('a=1');
 			});
 		});
 	});
@@ -286,11 +136,11 @@ describe('node-fetch', () => {
 			body: 'a=1'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 			return res.json().then(result => {
-				expect(result.method).to.equal('GET');
-				expect(result.body).to.equal('');
+				expect(result.method).toEqual('GET');
+				expect(result.body).toEqual('');
 			});
 		});
 	});
@@ -302,11 +152,11 @@ describe('node-fetch', () => {
 			body: 'a=1'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 			return res.json().then(result => {
-				expect(result.method).to.equal('PATCH');
-				expect(result.body).to.equal('a=1');
+				expect(result.method).toEqual('PATCH');
+				expect(result.body).toEqual('a=1');
 			});
 		});
 	});
@@ -338,8 +188,8 @@ describe('node-fetch', () => {
 			follow: 2
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(`${base}inspect`);
+			expect(res.status).toEqual(200);
 		});
 	});
 
@@ -359,9 +209,9 @@ describe('node-fetch', () => {
 			redirect: 'manual'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(url);
-			expect(res.status).to.equal(301);
-			expect(res.headers.get('location')).to.equal(`${base}inspect`);
+			expect(res.url).toEqual(url);
+			expect(res.status).toEqual(301);
+			expect(res.headers.get('location')).toEqual(`${base}inspect`);
 		});
 	});
 
@@ -381,8 +231,8 @@ describe('node-fetch', () => {
 			redirect: 'manual'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(url);
-			expect(res.status).to.equal(200);
+			expect(res.url).toEqual(url);
+			expect(res.status).toEqual(200);
 			expect(res.headers.get('location')).to.be.null;
 		});
 	});
@@ -393,18 +243,18 @@ describe('node-fetch', () => {
 			headers: new Headers({'x-custom-header': 'abc'})
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(`${base}inspect`);
+			expect(res.url).toEqual(`${base}inspect`);
 			return res.json();
 		}).then(res => {
-			expect(res.headers['x-custom-header']).to.equal('abc');
+			expect(res.headers['x-custom-header']).toEqual('abc');
 		});
 	});
 
 	it('should treat broken redirect as ordinary response (follow)', () => {
 		const url = `${base}redirect/no-location`;
 		return fetch(url).then(res => {
-			expect(res.url).to.equal(url);
-			expect(res.status).to.equal(301);
+			expect(res.url).toEqual(url);
+			expect(res.status).toEqual(301);
 			expect(res.headers.get('location')).to.be.null;
 		});
 	});
@@ -415,8 +265,8 @@ describe('node-fetch', () => {
 			redirect: 'manual'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.url).to.equal(url);
-			expect(res.status).to.equal(301);
+			expect(res.url).toEqual(url);
+			expect(res.status).toEqual(301);
 			expect(res.headers.get('location')).to.be.null;
 		});
 	});
@@ -450,14 +300,14 @@ describe('node-fetch', () => {
 	it('should handle client-error response', () => {
 		const url = `${base}error/400`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
-			expect(res.status).to.equal(400);
-			expect(res.statusText).to.equal('Bad Request');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
+			expect(res.status).toEqual(400);
+			expect(res.statusText).toEqual('Bad Request');
 			expect(res.ok).to.be.false;
 			return res.text().then(result => {
 				expect(res.bodyUsed).to.be.true;
 				expect(result).to.be.a('string');
-				expect(result).to.equal('client error');
+				expect(result).toEqual('client error');
 			});
 		});
 	});
@@ -465,14 +315,14 @@ describe('node-fetch', () => {
 	it('should handle server-error response', () => {
 		const url = `${base}error/500`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
-			expect(res.status).to.equal(500);
-			expect(res.statusText).to.equal('Internal Server Error');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
+			expect(res.status).toEqual(500);
+			expect(res.statusText).toEqual('Internal Server Error');
 			expect(res.ok).to.be.false;
 			return res.text().then(result => {
 				expect(res.bodyUsed).to.be.true;
 				expect(result).to.be.a('string');
-				expect(result).to.equal('server error');
+				expect(result).toEqual('server error');
 			});
 		});
 	});
@@ -494,7 +344,7 @@ describe('node-fetch', () => {
 	it('should reject invalid json response', () => {
 		const url = `${base}error/json`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('application/json');
+			expect(res.headers.get('content-type')).toEqual('application/json');
 			return expect(res.json()).to.eventually.be.rejectedWith(Error);
 		});
 	});
@@ -502,8 +352,8 @@ describe('node-fetch', () => {
 	it('should handle no content response', () => {
 		const url = `${base}no-content`;
 		return fetch(url).then(res => {
-			expect(res.status).to.equal(204);
-			expect(res.statusText).to.equal('No Content');
+			expect(res.status).toEqual(204);
+			expect(res.statusText).toEqual('No Content');
 			expect(res.ok).to.be.true;
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
@@ -515,8 +365,8 @@ describe('node-fetch', () => {
 	it('should reject when trying to parse no content response as json', () => {
 		const url = `${base}no-content`;
 		return fetch(url).then(res => {
-			expect(res.status).to.equal(204);
-			expect(res.statusText).to.equal('No Content');
+			expect(res.status).toEqual(204);
+			expect(res.statusText).toEqual('No Content');
 			expect(res.ok).to.be.true;
 			return expect(res.json()).to.eventually.be.rejectedWith(Error);
 		});
@@ -525,9 +375,9 @@ describe('node-fetch', () => {
 	it('should handle no content response with gzip encoding', () => {
 		const url = `${base}no-content/gzip`;
 		return fetch(url).then(res => {
-			expect(res.status).to.equal(204);
-			expect(res.statusText).to.equal('No Content');
-			expect(res.headers.get('content-encoding')).to.equal('gzip');
+			expect(res.status).toEqual(204);
+			expect(res.statusText).toEqual('No Content');
+			expect(res.headers.get('content-encoding')).toEqual('gzip');
 			expect(res.ok).to.be.true;
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
@@ -539,8 +389,8 @@ describe('node-fetch', () => {
 	it('should handle not modified response', () => {
 		const url = `${base}not-modified`;
 		return fetch(url).then(res => {
-			expect(res.status).to.equal(304);
-			expect(res.statusText).to.equal('Not Modified');
+			expect(res.status).toEqual(304);
+			expect(res.statusText).toEqual('Not Modified');
 			expect(res.ok).to.be.false;
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
@@ -552,9 +402,9 @@ describe('node-fetch', () => {
 	it('should handle not modified response with gzip encoding', () => {
 		const url = `${base}not-modified/gzip`;
 		return fetch(url).then(res => {
-			expect(res.status).to.equal(304);
-			expect(res.statusText).to.equal('Not Modified');
-			expect(res.headers.get('content-encoding')).to.equal('gzip');
+			expect(res.status).toEqual(304);
+			expect(res.statusText).toEqual('Not Modified');
+			expect(res.headers.get('content-encoding')).toEqual('gzip');
 			expect(res.ok).to.be.false;
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
@@ -566,10 +416,10 @@ describe('node-fetch', () => {
 	it('should decompress gzip response', () => {
 		const url = `${base}gzip`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('hello world');
+				expect(result).toEqual('hello world');
 			});
 		});
 	});
@@ -577,10 +427,10 @@ describe('node-fetch', () => {
 	it('should decompress slightly invalid gzip response', () => {
 		const url = `${base}gzip-truncated`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('hello world');
+				expect(result).toEqual('hello world');
 			});
 		});
 	});
@@ -588,10 +438,10 @@ describe('node-fetch', () => {
 	it('should make capitalised Content-Encoding lowercase', () => {
 		const url = `${base}gzip-capital`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-encoding')).to.equal('gzip');
+			expect(res.headers.get('content-encoding')).toEqual('gzip');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('hello world');
+				expect(result).toEqual('hello world');
 			});
 		});
 	});
@@ -599,10 +449,10 @@ describe('node-fetch', () => {
 	it('should decompress deflate response', () => {
 		const url = `${base}deflate`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('hello world');
+				expect(result).toEqual('hello world');
 			});
 		});
 	});
@@ -610,10 +460,10 @@ describe('node-fetch', () => {
 	it('should decompress deflate raw response from old apache server', () => {
 		const url = `${base}deflate-raw`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('hello world');
+				expect(result).toEqual('hello world');
 			});
 		});
 	});
@@ -625,10 +475,10 @@ describe('node-fetch', () => {
 
 		const url = `${base}brotli`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('hello world');
+				expect(result).toEqual('hello world');
 			});
 		});
 	});
@@ -640,9 +490,9 @@ describe('node-fetch', () => {
 
 		const url = `${base}no-content/brotli`;
 		return fetch(url).then(res => {
-			expect(res.status).to.equal(204);
-			expect(res.statusText).to.equal('No Content');
-			expect(res.headers.get('content-encoding')).to.equal('br');
+			expect(res.status).toEqual(204);
+			expect(res.statusText).toEqual('No Content');
+			expect(res.headers.get('content-encoding')).toEqual('br');
 			expect(res.ok).to.be.true;
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
@@ -654,10 +504,10 @@ describe('node-fetch', () => {
 	it('should skip decompression if unsupported', () => {
 		const url = `${base}sdch`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
-				expect(result).to.equal('fake sdch string');
+				expect(result).toEqual('fake sdch string');
 			});
 		});
 	});
@@ -665,7 +515,7 @@ describe('node-fetch', () => {
 	it('should reject if response compression is invalid', () => {
 		const url = `${base}invalid-content-encoding`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return expect(res.text()).to.eventually.be.rejected
 				.and.be.an.instanceOf(FetchError)
 				.and.have.property('code', 'Z_DATA_ERROR');
@@ -676,7 +526,7 @@ describe('node-fetch', () => {
 		const url = `${base}invalid-content-encoding`;
 		fetch(url)
 			.then(res => {
-				expect(res.status).to.equal(200);
+				expect(res.status).toEqual(200);
 			})
 			.catch(() => { })
 			.then(() => {
@@ -698,7 +548,7 @@ describe('node-fetch', () => {
 
 		const url = `${base}invalid-content-encoding`;
 		return fetch(url).then(delay).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return expect(res.text()).to.eventually.be.rejected
 				.and.be.an.instanceOf(FetchError)
 				.and.have.property('code', 'Z_DATA_ERROR');
@@ -711,7 +561,7 @@ describe('node-fetch', () => {
 			compress: false
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(result => {
 				expect(result).to.be.a('string');
 				expect(result).to.not.equal('hello world');
@@ -728,7 +578,7 @@ describe('node-fetch', () => {
 			}
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.headers['accept-encoding']).to.equal('gzip');
+			expect(res.headers['accept-encoding']).toEqual('gzip');
 		});
 	});
 
@@ -868,7 +718,7 @@ describe('node-fetch', () => {
 			.and.be.an.instanceof(Error)
 			.and.have.property('name', 'AbortError')
 			.then(() => {
-				expect(signal.listeners.abort.length).to.equal(0);
+				expect(signal.listeners.abort.length).toEqual(0);
 			});
 		controller.abort();
 		return result;
@@ -893,7 +743,7 @@ describe('node-fetch', () => {
 			signal: abortController.signal
 		});
 		return expect(fetch(request).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			const result = res.text();
 			abortController.abort();
 			return result;
@@ -914,7 +764,7 @@ describe('node-fetch', () => {
 			expect(fetchResponseError).to.be.eventually.rejected,
 			expect(fetchRedirect).to.eventually.be.fulfilled
 		]).then(() => {
-			expect(signal.listeners.abort.length).to.equal(0);
+			expect(signal.listeners.abort.length).toEqual(0);
 		});
 	});
 
@@ -1031,14 +881,14 @@ describe('node-fetch', () => {
 			}
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.headers['user-agent']).to.equal('faked');
+			expect(res.headers['user-agent']).toEqual('faked');
 		});
 	});
 
 	it('should set default Accept header', () => {
 		const url = `${base}inspect`;
 		fetch(url).then(res => res.json()).then(res => {
-			expect(res.headers.accept).to.equal('*/*');
+			expect(res.headers.accept).toEqual('*/*');
 		});
 	});
 
@@ -1050,7 +900,7 @@ describe('node-fetch', () => {
 			}
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.headers.accept).to.equal('application/json');
+			expect(res.headers.accept).toEqual('application/json');
 		});
 	});
 
@@ -1062,10 +912,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
+			expect(res.method).toEqual('POST');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('0');
+			expect(res.headers['content-length']).toEqual('0');
 		});
 	});
 
@@ -1078,11 +928,11 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('a=1');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
-			expect(res.headers['content-type']).to.equal('text/plain;charset=UTF-8');
-			expect(res.headers['content-length']).to.equal('3');
+			expect(res.headers['content-type']).toEqual('text/plain;charset=UTF-8');
+			expect(res.headers['content-length']).toEqual('3');
 		});
 	});
 
@@ -1095,11 +945,11 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('a=1');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('3');
+			expect(res.headers['content-length']).toEqual('3');
 		});
 	});
 
@@ -1110,11 +960,11 @@ describe('node-fetch', () => {
 			body: stringToArrayBuffer('Hello, world!\n')
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('Hello, world!\n');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('Hello, world!\n');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('14');
+			expect(res.headers['content-length']).toEqual('14');
 		});
 	});
 
@@ -1125,11 +975,11 @@ describe('node-fetch', () => {
 			body: new VMUint8Array(Buffer.from('Hello, world!\n')).buffer
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('Hello, world!\n');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('Hello, world!\n');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('14');
+			expect(res.headers['content-length']).toEqual('14');
 		});
 	});
 
@@ -1140,11 +990,11 @@ describe('node-fetch', () => {
 			body: new Uint8Array(stringToArrayBuffer('Hello, world!\n'))
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('Hello, world!\n');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('Hello, world!\n');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('14');
+			expect(res.headers['content-length']).toEqual('14');
 		});
 	});
 
@@ -1155,11 +1005,11 @@ describe('node-fetch', () => {
 			body: new DataView(stringToArrayBuffer('Hello, world!\n'))
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('Hello, world!\n');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('Hello, world!\n');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('14');
+			expect(res.headers['content-length']).toEqual('14');
 		});
 	});
 
@@ -1170,11 +1020,11 @@ describe('node-fetch', () => {
 			body: new VMUint8Array(Buffer.from('Hello, world!\n'))
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('Hello, world!\n');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('Hello, world!\n');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('14');
+			expect(res.headers['content-length']).toEqual('14');
 		});
 	});
 
@@ -1185,11 +1035,11 @@ describe('node-fetch', () => {
 			body: new Uint8Array(stringToArrayBuffer('Hello, world!\n'), 7, 6)
 		};
 		return fetch(url, opts).then(res => res.json()).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('world!');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('world!');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('6');
+			expect(res.headers['content-length']).toEqual('6');
 		});
 	});
 
@@ -1202,11 +1052,11 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('a=1');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
 			expect(res.headers['content-type']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('3');
+			expect(res.headers['content-length']).toEqual('3');
 		});
 	});
 
@@ -1221,11 +1071,11 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('a=1');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
-			expect(res.headers['content-type']).to.equal('text/plain;charset=utf-8');
-			expect(res.headers['content-length']).to.equal('3');
+			expect(res.headers['content-type']).toEqual('text/plain;charset=utf-8');
+			expect(res.headers['content-length']).toEqual('3');
 		});
 	});
 
@@ -1241,9 +1091,9 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('a=1');
-			expect(res.headers['transfer-encoding']).to.equal('chunked');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('a=1');
+			expect(res.headers['transfer-encoding']).toEqual('chunked');
 			expect(res.headers['content-type']).to.be.undefined;
 			expect(res.headers['content-length']).to.be.undefined;
 		});
@@ -1261,10 +1111,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
+			expect(res.method).toEqual('POST');
 			expect(res.headers['content-type']).to.startWith('multipart/form-data;boundary=');
 			expect(res.headers['content-length']).to.be.a('string');
-			expect(res.body).to.equal('a=1');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1281,7 +1131,7 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
+			expect(res.method).toEqual('POST');
 			expect(res.headers['content-type']).to.startWith('multipart/form-data;boundary=');
 			expect(res.headers['content-length']).to.be.undefined;
 			expect(res.body).to.contain('my_field=');
@@ -1304,11 +1154,11 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
+			expect(res.method).toEqual('POST');
 			expect(res.headers['content-type']).to.startWith('multipart/form-data; boundary=');
 			expect(res.headers['content-length']).to.be.a('string');
-			expect(res.headers.b).to.equal('2');
-			expect(res.body).to.equal('a=1');
+			expect(res.headers.b).toEqual('2');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1322,10 +1172,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('[object Object]');
-			expect(res.headers['content-type']).to.equal('text/plain;charset=UTF-8');
-			expect(res.headers['content-length']).to.equal('15');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('[object Object]');
+			expect(res.headers['content-type']).toEqual('text/plain;charset=UTF-8');
+			expect(res.headers['content-length']).toEqual('15');
 		});
 	});
 
@@ -1333,20 +1183,20 @@ describe('node-fetch', () => {
 		const params = new URLSearchParams();
 		const res = new Response(params);
 		res.headers.get('Content-Type');
-		expect(res.headers.get('Content-Type')).to.equal('application/x-www-form-urlencoded;charset=UTF-8');
+		expect(res.headers.get('Content-Type')).toEqual('application/x-www-form-urlencoded;charset=UTF-8');
 	});
 
 	it('constructing a Request with URLSearchParams as body should have a Content-Type', () => {
 		const params = new URLSearchParams();
 		const req = new Request(base, {method: 'POST', body: params});
-		expect(req.headers.get('Content-Type')).to.equal('application/x-www-form-urlencoded;charset=UTF-8');
+		expect(req.headers.get('Content-Type')).toEqual('application/x-www-form-urlencoded;charset=UTF-8');
 	});
 
 	it('Reading a body with URLSearchParams should echo back the result', () => {
 		const params = new URLSearchParams();
 		params.append('a', '1');
 		return new Response(params).text().then(text => {
-			expect(text).to.equal('a=1');
+			expect(text).toEqual('a=1');
 		});
 	});
 
@@ -1356,7 +1206,7 @@ describe('node-fetch', () => {
 		const req = new Request(`${base}inspect`, {method: 'POST', body: params});
 		params.append('a', '1');
 		return req.text().then(text => {
-			expect(text).to.equal('');
+			expect(text).toEqual('');
 		});
 	});
 
@@ -1372,10 +1222,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.headers['content-type']).to.equal('application/x-www-form-urlencoded;charset=UTF-8');
-			expect(res.headers['content-length']).to.equal('3');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.headers['content-type']).toEqual('application/x-www-form-urlencoded;charset=UTF-8');
+			expect(res.headers['content-length']).toEqual('3');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1392,10 +1242,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.headers['content-type']).to.equal('application/x-www-form-urlencoded;charset=UTF-8');
-			expect(res.headers['content-length']).to.equal('3');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.headers['content-type']).toEqual('application/x-www-form-urlencoded;charset=UTF-8');
+			expect(res.headers['content-length']).toEqual('3');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1414,10 +1264,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.headers['content-type']).to.equal('application/x-www-form-urlencoded;charset=UTF-8');
-			expect(res.headers['content-length']).to.equal('3');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.headers['content-type']).toEqual('application/x-www-form-urlencoded;charset=UTF-8');
+			expect(res.headers['content-length']).toEqual('3');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1434,11 +1284,11 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('POST');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('POST');
+			expect(res.body).toEqual('a=1');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
-			expect(res.headers['content-type']).to.equal('text/plain;charset=UTF-8');
-			expect(res.headers['content-length']).to.equal('3');
+			expect(res.headers['content-type']).toEqual('text/plain;charset=UTF-8');
+			expect(res.headers['content-length']).toEqual('3');
 		});
 	});
 
@@ -1451,8 +1301,8 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('PUT');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('PUT');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1464,7 +1314,7 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('DELETE');
+			expect(res.method).toEqual('DELETE');
 		});
 	});
 
@@ -1477,10 +1327,10 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('DELETE');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('DELETE');
+			expect(res.body).toEqual('a=1');
 			expect(res.headers['transfer-encoding']).to.be.undefined;
-			expect(res.headers['content-length']).to.equal('3');
+			expect(res.headers['content-length']).toEqual('3');
 		});
 	});
 
@@ -1493,8 +1343,8 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.method).to.equal('PATCH');
-			expect(res.body).to.equal('a=1');
+			expect(res.method).toEqual('PATCH');
+			expect(res.body).toEqual('a=1');
 		});
 	});
 
@@ -1504,13 +1354,13 @@ describe('node-fetch', () => {
 			method: 'HEAD'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.status).to.equal(200);
-			expect(res.statusText).to.equal('OK');
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.status).toEqual(200);
+			expect(res.statusText).toEqual('OK');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			expect(res.body).to.be.an.instanceof(stream.Transform);
 			return res.text();
 		}).then(text => {
-			expect(text).to.equal('');
+			expect(text).toEqual('');
 		});
 	});
 
@@ -1520,11 +1370,11 @@ describe('node-fetch', () => {
 			method: 'HEAD'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.status).to.equal(404);
-			expect(res.headers.get('content-encoding')).to.equal('gzip');
+			expect(res.status).toEqual(404);
+			expect(res.headers.get('content-encoding')).toEqual('gzip');
 			return res.text();
 		}).then(text => {
-			expect(text).to.equal('');
+			expect(text).toEqual('');
 		});
 	});
 
@@ -1534,9 +1384,9 @@ describe('node-fetch', () => {
 			method: 'OPTIONS'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.status).to.equal(200);
-			expect(res.statusText).to.equal('OK');
-			expect(res.headers.get('allow')).to.equal('GET, HEAD, OPTIONS');
+			expect(res.status).toEqual(200);
+			expect(res.statusText).toEqual('OK');
+			expect(res.headers.get('allow')).toEqual('GET, HEAD, OPTIONS');
 			expect(res.body).to.be.an.instanceof(stream.Transform);
 		});
 	});
@@ -1544,7 +1394,7 @@ describe('node-fetch', () => {
 	it('should reject decoding body twice', () => {
 		const url = `${base}plain`;
 		return fetch(url).then(res => {
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return res.text().then(() => {
 				expect(res.bodyUsed).to.be.true;
 				return expect(res.text()).to.eventually.be.rejectedWith(Error);
@@ -1558,8 +1408,8 @@ describe('node-fetch', () => {
 			size: 5
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.status).to.equal(200);
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.status).toEqual(200);
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return expect(res.text()).to.eventually.be.rejected
 				.and.be.an.instanceOf(FetchError)
 				.and.have.property('type', 'max-size');
@@ -1572,8 +1422,8 @@ describe('node-fetch', () => {
 			size: 5
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.status).to.equal(200);
-			expect(res.headers.get('content-type')).to.equal('text/plain');
+			expect(res.status).toEqual(200);
+			expect(res.headers.get('content-type')).toEqual('text/plain');
 			return expect(res.text()).to.eventually.be.rejected
 				.and.be.an.instanceOf(FetchError)
 				.and.have.property('type', 'max-size');
@@ -1589,7 +1439,7 @@ describe('node-fetch', () => {
 					return;
 				}
 
-				expect(chunk.toString()).to.equal('world');
+				expect(chunk.toString()).toEqual('world');
 			});
 		});
 	});
@@ -1605,7 +1455,7 @@ describe('node-fetch', () => {
 					return;
 				}
 
-				expect(chunk.toString()).to.equal('world');
+				expect(chunk.toString()).toEqual('world');
 			};
 
 			return Promise.all([
@@ -1621,7 +1471,7 @@ describe('node-fetch', () => {
 			const r1 = res.clone();
 			return Promise.all([res.json(), r1.text()]).then(results => {
 				expect(results[0]).to.deep.equal({name: 'value'});
-				expect(results[1]).to.equal('{"name":"value"}');
+				expect(results[1]).toEqual('{"name":"value"}');
 			});
 		});
 	});
@@ -1633,7 +1483,7 @@ describe('node-fetch', () => {
 			return res.json().then(result => {
 				expect(result).to.deep.equal({name: 'value'});
 				return r1.text().then(result => {
-					expect(result).to.equal('{"name":"value"}');
+					expect(result).toEqual('{"name":"value"}');
 				});
 			});
 		});
@@ -1644,7 +1494,7 @@ describe('node-fetch', () => {
 		return fetch(url).then(res => {
 			const r1 = res.clone();
 			return r1.text().then(result => {
-				expect(result).to.equal('{"name":"value"}');
+				expect(result).toEqual('{"name":"value"}');
 				return res.json().then(result => {
 					expect(result).to.deep.equal({name: 'value'});
 				});
@@ -1730,8 +1580,8 @@ describe('node-fetch', () => {
 		const url = `${base}cookie`;
 		return fetch(url).then(res => {
 			const expected = 'a=1, b=1';
-			expect(res.headers.get('set-cookie')).to.equal(expected);
-			expect(res.headers.get('Set-Cookie')).to.equal(expected);
+			expect(res.headers.get('set-cookie')).toEqual(expected);
+			expect(res.headers.get('Set-Cookie')).toEqual(expected);
 		});
 	});
 
@@ -1765,7 +1615,7 @@ describe('node-fetch', () => {
 		return fetch(url, opts).then(res => {
 			return res.json();
 		}).then(res => {
-			expect(res.headers.connection).to.equal('keep-alive');
+			expect(res.headers.connection).toEqual('keep-alive');
 		});
 	});
 
@@ -1773,9 +1623,9 @@ describe('node-fetch', () => {
 		const url = `${base}hello`;
 		const req = new Request(url);
 		return fetch(req).then(res => {
-			expect(res.url).to.equal(url);
+			expect(res.url).toEqual(url);
 			expect(res.ok).to.be.true;
-			expect(res.status).to.equal(200);
+			expect(res.status).toEqual(200);
 		});
 	});
 
@@ -1784,9 +1634,9 @@ describe('node-fetch', () => {
 		const urlObj = new URL(url);
 		const req = new Request(urlObj);
 		return fetch(req).then(res => {
-			expect(res.url).to.equal(url);
+			expect(res.url).toEqual(url);
 			expect(res.ok).to.be.true;
-			expect(res.status).to.equal(200);
+			expect(res.status).toEqual(200);
 		});
 	});
 
@@ -1795,9 +1645,9 @@ describe('node-fetch', () => {
 		const urlObj = new URL(url);
 		const req = new Request(urlObj);
 		return fetch(req).then(res => {
-			expect(res.url).to.equal(url);
+			expect(res.url).toEqual(url);
 			expect(res.ok).to.be.true;
-			expect(res.status).to.equal(200);
+			expect(res.status).toEqual(200);
 		});
 	});
 
@@ -1806,7 +1656,7 @@ describe('node-fetch', () => {
 			.blob()
 			.then(blob => blob.text())
 			.then(body => {
-				expect(body).to.equal('hello');
+				expect(body).toEqual('hello');
 			});
 	});
 
@@ -1816,7 +1666,7 @@ describe('node-fetch', () => {
 			.then(blob => blob.arrayBuffer())
 			.then(ab => {
 				const str = String.fromCharCode.apply(null, new Uint8Array(ab));
-				expect(str).to.equal('hello');
+				expect(str).toEqual('hello');
 			});
 	});
 
@@ -1825,7 +1675,7 @@ describe('node-fetch', () => {
 			.blob()
 			.then(blob => streamToPromise(blob.stream(), data => {
 				const str = data.toString();
-				expect(str).to.equal('hello');
+				expect(str).toEqual('hello');
 			}));
 	});
 
@@ -1844,9 +1694,9 @@ describe('node-fetch', () => {
 				body: blob
 			});
 		}).then(res => res.json()).then(({body, headers}) => {
-			expect(body).to.equal('world');
-			expect(headers['content-type']).to.equal(type);
-			expect(headers['content-length']).to.equal(String(length));
+			expect(body).toEqual('world');
+			expect(headers['content-type']).toEqual(type);
+			expect(headers['content-length']).toEqual(String(length));
 		});
 	});
 
@@ -1866,8 +1716,8 @@ describe('node-fetch', () => {
 		}).then(res => {
 			return res.json();
 		}).then(body => {
-			expect(body.method).to.equal('GET');
-			expect(body.headers.a).to.equal('2');
+			expect(body.method).toEqual('GET');
+			expect(body.headers.a).toEqual('2');
 		});
 	});
 
@@ -1888,11 +1738,11 @@ describe('node-fetch', () => {
 		const err = new FetchError('test message', 'test-error', systemError);
 		expect(err).to.be.an.instanceof(Error);
 		expect(err).to.be.an.instanceof(FetchError);
-		expect(err.name).to.equal('FetchError');
-		expect(err.message).to.equal('test message');
-		expect(err.type).to.equal('test-error');
-		expect(err.code).to.equal('ESOMEERROR');
-		expect(err.errno).to.equal('ESOMEERROR');
+		expect(err.name).toEqual('FetchError');
+		expect(err.message).toEqual('test message');
+		expect(err.type).toEqual('test-error');
+		expect(err.code).toEqual('ESOMEERROR');
+		expect(err.errno).toEqual('ESOMEERROR');
 		// Reading the stack is quite slow (~30-50ms)
 		expect(err.stack).to.include('funcName').and.to.startWith(`${err.name}: ${err.message}`);
 	});
@@ -1904,7 +1754,7 @@ describe('node-fetch', () => {
 			method: 'HEAD'
 		};
 		return fetch(url, opts).then(res => {
-			expect(res.status).to.equal(200);
+			expect(res.status).toEqual(200);
 			expect(res.ok).to.be.true;
 		});
 	});
@@ -1944,7 +1794,7 @@ describe('node-fetch', () => {
 
 		const agent = http.Agent({lookup: lookupSpy});
 		return fetch(url, {agent}).then(() => {
-			expect(called).to.equal(2);
+			expect(called).toEqual(2);
 		});
 	});
 
@@ -1960,8 +1810,8 @@ describe('node-fetch', () => {
 		const agent = http.Agent({lookup: lookupSpy, family});
 		return fetch(url, {agent}).then(() => {
 			expect(families).to.have.length(2);
-			expect(families[0]).to.equal(family);
-			expect(families[1]).to.equal(family);
+			expect(families[0]).toEqual(family);
+			expect(families[1]).toEqual(family);
 		});
 	});
 
@@ -1983,9 +1833,9 @@ describe('node-fetch', () => {
 			return res.json();
 		}).then(res => {
 			// The agent provider should have been called
-			expect(parsedURL.protocol).to.equal('http:');
+			expect(parsedURL.protocol).toEqual('http:');
 			// The agent we returned should have been used
-			expect(res.headers.connection).to.equal('keep-alive');
+			expect(res.headers.connection).toEqual('keep-alive');
 		});
 	});
 
@@ -2036,17 +1886,17 @@ describe('node-fetch', () => {
 		});
 
 		expect(getTotalBytes(streamRequest)).to.be.null;
-		expect(getTotalBytes(blobRequest)).to.equal(blobBody.size);
+		expect(getTotalBytes(blobRequest)).toEqual(blobBody.size);
 		expect(getTotalBytes(formRequest)).to.not.be.null;
-		expect(getTotalBytes(bufferRequest)).to.equal(bufferBody.length);
-		expect(getTotalBytes(stringRequest)).to.equal(bodyContent.length);
-		expect(getTotalBytes(nullRequest)).to.equal(0);
+		expect(getTotalBytes(bufferRequest)).toEqual(bufferBody.length);
+		expect(getTotalBytes(stringRequest)).toEqual(bodyContent.length);
+		expect(getTotalBytes(nullRequest)).toEqual(0);
 
 		expect(extractContentType(streamBody)).to.be.null;
-		expect(extractContentType(blobBody)).to.equal('text/plain');
+		expect(extractContentType(blobBody)).toEqual('text/plain');
 		expect(extractContentType(formBody)).to.startWith('multipart/form-data');
 		expect(extractContentType(bufferBody)).to.be.null;
-		expect(extractContentType(bodyContent)).to.equal('text/plain;charset=UTF-8');
+		expect(extractContentType(bodyContent)).toEqual('text/plain;charset=UTF-8');
 		expect(extractContentType(null)).to.be.null;
 	});
 });
@@ -2255,23 +2105,23 @@ describe('Headers', () => {
 			['b', '2'],
 			['a', '3']
 		]);
-		expect(headers.get('a')).to.equal('1, 3');
-		expect(headers.get('b')).to.equal('2');
+		expect(headers.get('a')).toEqual('1, 3');
+		expect(headers.get('b')).toEqual('2');
 
 		headers = new Headers([
 			new Set(['a', '1']),
 			['b', '2'],
 			new Map([['a', null], ['3', null]]).keys()
 		]);
-		expect(headers.get('a')).to.equal('1, 3');
-		expect(headers.get('b')).to.equal('2');
+		expect(headers.get('a')).toEqual('1, 3');
+		expect(headers.get('b')).toEqual('2');
 
 		headers = new Headers(new Map([
 			['a', '1'],
 			['b', '2']
 		]));
-		expect(headers.get('a')).to.equal('1');
-		expect(headers.get('b')).to.equal('2');
+		expect(headers.get('a')).toEqual('1');
+		expect(headers.get('b')).toEqual('2');
 	});
 
 	it('should throw a TypeError if non-tuple exists in a headers initializer', () => {
@@ -2329,7 +2179,7 @@ describe('Response', () => {
 		body = body.pipe(new stream.PassThrough());
 		const res = new Response(body);
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
@@ -2339,27 +2189,27 @@ describe('Response', () => {
 				a: '1'
 			}
 		});
-		expect(res.headers.get('a')).to.equal('1');
+		expect(res.headers.get('a')).toEqual('1');
 	});
 
 	it('should support text() method', () => {
 		const res = new Response('a=1');
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support json() method', () => {
 		const res = new Response('{"a":1}');
 		return res.json().then(result => {
-			expect(result.a).to.equal(1);
+			expect(result.a).toEqual(1);
 		});
 	});
 
 	it('should support buffer() method', () => {
 		const res = new Response('a=1');
 		return res.buffer().then(result => {
-			expect(result.toString()).to.equal('a=1');
+			expect(result.toString()).toEqual('a=1');
 		});
 	});
 
@@ -2372,8 +2222,8 @@ describe('Response', () => {
 		});
 		return res.blob().then(result => {
 			expect(result).to.be.an.instanceOf(Blob);
-			expect(result.size).to.equal(3);
-			expect(result.type).to.equal('text/plain');
+			expect(result.size).toEqual(3);
+			expect(result.type).toEqual('text/plain');
 		});
 	});
 
@@ -2389,15 +2239,15 @@ describe('Response', () => {
 			statusText: 'production'
 		});
 		const cl = res.clone();
-		expect(cl.headers.get('a')).to.equal('1');
-		expect(cl.url).to.equal(base);
-		expect(cl.status).to.equal(346);
-		expect(cl.statusText).to.equal('production');
+		expect(cl.headers.get('a')).toEqual('1');
+		expect(cl.url).toEqual(base);
+		expect(cl.status).toEqual(346);
+		expect(cl.statusText).toEqual('production');
 		expect(cl.ok).to.be.false;
 		// Clone body shouldn't be the same body
 		expect(cl.body).to.not.equal(body);
 		return cl.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
@@ -2406,67 +2256,67 @@ describe('Response', () => {
 		body = body.pipe(new stream.PassThrough());
 		const res = new Response(body);
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support string as body', () => {
 		const res = new Response('a=1');
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support buffer as body', () => {
 		const res = new Response(Buffer.from('a=1'));
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support ArrayBuffer as body', () => {
 		const res = new Response(stringToArrayBuffer('a=1'));
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support blob as body', () => {
 		const res = new Response(new Blob(['a=1']));
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support Uint8Array as body', () => {
 		const res = new Response(new Uint8Array(stringToArrayBuffer('a=1')));
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should support DataView as body', () => {
 		const res = new Response(new DataView(stringToArrayBuffer('a=1')));
 		return res.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
 	it('should default to null as body', () => {
 		const res = new Response();
-		expect(res.body).to.equal(null);
+		expect(res.body).toEqual(null);
 
-		return res.text().then(result => expect(result).to.equal(''));
+		return res.text().then(result => expect(result).toEqual(''));
 	});
 
 	it('should default to 200 as status code', () => {
 		const res = new Response(null);
-		expect(res.status).to.equal(200);
+		expect(res.status).toEqual(200);
 	});
 
 	it('should default to empty string as url', () => {
 		const res = new Response();
-		expect(res.url).to.equal('');
+		expect(res.url).toEqual('');
 	});
 });
 
@@ -2521,15 +2371,15 @@ describe('Request', () => {
 			follow: 2
 		});
 
-		expect(r2.url).to.equal(url);
-		expect(r2.method).to.equal('POST');
-		expect(r2.signal).to.equal(signal);
+		expect(r2.url).toEqual(url);
+		expect(r2.method).toEqual('POST');
+		expect(r2.signal).toEqual(signal);
 		// Note that we didn't clone the body
-		expect(r2.body).to.equal(form);
-		expect(r1.follow).to.equal(1);
-		expect(r2.follow).to.equal(2);
-		expect(r1.counter).to.equal(0);
-		expect(r2.counter).to.equal(0);
+		expect(r2.body).toEqual(form);
+		expect(r1.follow).toEqual(1);
+		expect(r2.follow).toEqual(2);
+		expect(r1.counter).toEqual(0);
+		expect(r2.counter).toEqual(0);
 	});
 
 	it('should override signal on derived Request instances', () => {
@@ -2541,8 +2391,8 @@ describe('Request', () => {
 		const derivedRequest = new Request(parentRequest, {
 			signal: derivedAbortController.signal
 		});
-		expect(parentRequest.signal).to.equal(parentAbortController.signal);
-		expect(derivedRequest.signal).to.equal(derivedAbortController.signal);
+		expect(parentRequest.signal).toEqual(parentAbortController.signal);
+		expect(derivedRequest.signal).toEqual(derivedAbortController.signal);
 	});
 
 	it('should allow removing signal on derived Request instances', () => {
@@ -2553,8 +2403,8 @@ describe('Request', () => {
 		const derivedRequest = new Request(parentRequest, {
 			signal: null
 		});
-		expect(parentRequest.signal).to.equal(parentAbortController.signal);
-		expect(derivedRequest.signal).to.equal(null);
+		expect(parentRequest.signal).toEqual(parentAbortController.signal);
+		expect(derivedRequest.signal).toEqual(null);
 	});
 
 	it('should throw error with GET/HEAD requests with body', () => {
@@ -2574,8 +2424,8 @@ describe('Request', () => {
 
 	it('should default to null as body', () => {
 		const req = new Request('.');
-		expect(req.body).to.equal(null);
-		return req.text().then(result => expect(result).to.equal(''));
+		expect(req.body).toEqual(null);
+		return req.text().then(result => expect(result).toEqual(''));
 	});
 
 	it('should support parsing headers', () => {
@@ -2585,8 +2435,8 @@ describe('Request', () => {
 				a: '1'
 			}
 		});
-		expect(req.url).to.equal(url);
-		expect(req.headers.get('a')).to.equal('1');
+		expect(req.url).toEqual(url);
+		expect(req.headers.get('a')).toEqual('1');
 	});
 
 	it('should support arrayBuffer() method', () => {
@@ -2595,11 +2445,11 @@ describe('Request', () => {
 			method: 'POST',
 			body: 'a=1'
 		});
-		expect(req.url).to.equal(url);
+		expect(req.url).toEqual(url);
 		return req.arrayBuffer().then(result => {
 			expect(result).to.be.an.instanceOf(ArrayBuffer);
 			const str = String.fromCharCode.apply(null, new Uint8Array(result));
-			expect(str).to.equal('a=1');
+			expect(str).toEqual('a=1');
 		});
 	});
 
@@ -2609,9 +2459,9 @@ describe('Request', () => {
 			method: 'POST',
 			body: 'a=1'
 		});
-		expect(req.url).to.equal(url);
+		expect(req.url).toEqual(url);
 		return req.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
@@ -2621,9 +2471,9 @@ describe('Request', () => {
 			method: 'POST',
 			body: '{"a":1}'
 		});
-		expect(req.url).to.equal(url);
+		expect(req.url).toEqual(url);
 		return req.json().then(result => {
-			expect(result.a).to.equal(1);
+			expect(result.a).toEqual(1);
 		});
 	});
 
@@ -2633,9 +2483,9 @@ describe('Request', () => {
 			method: 'POST',
 			body: 'a=1'
 		});
-		expect(req.url).to.equal(url);
+		expect(req.url).toEqual(url);
 		return req.buffer().then(result => {
-			expect(result.toString()).to.equal('a=1');
+			expect(result.toString()).toEqual('a=1');
 		});
 	});
 
@@ -2645,18 +2495,18 @@ describe('Request', () => {
 			method: 'POST',
 			body: Buffer.from('a=1')
 		});
-		expect(req.url).to.equal(url);
+		expect(req.url).toEqual(url);
 		return req.blob().then(result => {
 			expect(result).to.be.an.instanceOf(Blob);
-			expect(result.size).to.equal(3);
-			expect(result.type).to.equal('');
+			expect(result.size).toEqual(3);
+			expect(result.type).toEqual('');
 		});
 	});
 
 	it('should support arbitrary url', () => {
 		const url = 'anything';
 		const req = new Request(url);
-		expect(req.url).to.equal('anything');
+		expect(req.url).toEqual('anything');
 	});
 
 	it('should support clone() method', () => {
@@ -2678,21 +2528,21 @@ describe('Request', () => {
 			signal
 		});
 		const cl = req.clone();
-		expect(cl.url).to.equal(url);
-		expect(cl.method).to.equal('POST');
-		expect(cl.redirect).to.equal('manual');
-		expect(cl.headers.get('b')).to.equal('2');
-		expect(cl.follow).to.equal(3);
-		expect(cl.compress).to.equal(false);
-		expect(cl.method).to.equal('POST');
-		expect(cl.counter).to.equal(0);
-		expect(cl.agent).to.equal(agent);
-		expect(cl.signal).to.equal(signal);
+		expect(cl.url).toEqual(url);
+		expect(cl.method).toEqual('POST');
+		expect(cl.redirect).toEqual('manual');
+		expect(cl.headers.get('b')).toEqual('2');
+		expect(cl.follow).toEqual(3);
+		expect(cl.compress).toEqual(false);
+		expect(cl.method).toEqual('POST');
+		expect(cl.counter).toEqual(0);
+		expect(cl.agent).toEqual(agent);
+		expect(cl.signal).toEqual(signal);
 		// Clone body shouldn't be the same body
 		expect(cl.body).to.not.equal(body);
 		return Promise.all([cl.text(), req.text()]).then(results => {
-			expect(results[0]).to.equal('a=1');
-			expect(results[1]).to.equal('a=1');
+			expect(results[0]).toEqual('a=1');
+			expect(results[1]).toEqual('a=1');
 		});
 	});
 
@@ -2702,7 +2552,7 @@ describe('Request', () => {
 			body: stringToArrayBuffer('a=1')
 		});
 		return req.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
@@ -2712,7 +2562,7 @@ describe('Request', () => {
 			body: new Uint8Array(stringToArrayBuffer('a=1'))
 		});
 		return req.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 
@@ -2722,7 +2572,7 @@ describe('Request', () => {
 			body: new DataView(stringToArrayBuffer('a=1'))
 		});
 		return req.text().then(result => {
-			expect(result).to.equal('a=1');
+			expect(result).toEqual('a=1');
 		});
 	});
 });
@@ -2743,8 +2593,8 @@ describe('external encoding', () => {
 	describe('data uri', () => {
 		it('should accept data uri', () => {
 			return fetch('data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=').then(r => {
-				expect(r.status).to.equal(200);
-				expect(r.headers.get('Content-Type')).to.equal('image/gif');
+				expect(r.status).toEqual(200);
+				expect(r.headers.get('Content-Type')).toEqual('image/gif');
 
 				return r.buffer().then(b => {
 					expect(b).to.be.an.instanceOf(Buffer);
@@ -2754,9 +2604,9 @@ describe('external encoding', () => {
 
 		it('should accept data uri of plain text', () => {
 			return fetch('data:,Hello%20World!').then(r => {
-				expect(r.status).to.equal(200);
-				expect(r.headers.get('Content-Type')).to.equal('text/plain');
-				return r.text().then(t => expect(t).to.equal('Hello World!'));
+				expect(r.status).toEqual(200);
+				expect(r.headers.get('Content-Type')).toEqual('text/plain');
+				return r.text().then(t => expect(t).toEqual('Hello World!'));
 			});
 		});
 
