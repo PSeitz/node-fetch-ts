@@ -2,7 +2,11 @@ import * as http from "http";
 import * as zlib from "zlib";
 import { promisify } from "util";
 // import {multipart as Multipart} from 'parted';
-
+function getRandomInt(min: number, max:number) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 export default class TestServer {
 	server: http.Server;
 	port: number;
@@ -10,7 +14,8 @@ export default class TestServer {
 	nextResponseHandler: any;
 	constructor() {
 		this.server = http.createServer(this.router);
-		this.port = 30001;
+		// this.port = 30001;
+		this.port = getRandomInt(30001, 33001);
 		this.hostname = "localhost";
 		// Node 8 default keepalive timeout is 5000ms
 		// make it shorter here as we want to close server quickly at the end of tests

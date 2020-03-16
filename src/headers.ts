@@ -346,7 +346,7 @@ const HeadersIteratorPrototype = Object.setPrototypeOf(
             }
 
             const { target, kind, index } = this[INTERNAL];
-            const values = getHeaders(target, kind);
+            const values = getHeaders(target);
             const len = values.length;
             if (index >= len) {
                 return {
@@ -366,7 +366,7 @@ const HeadersIteratorPrototype = Object.setPrototypeOf(
     Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()))
 );
 
-function createHeadersIterator(target: this, kind: string) {
+function createHeadersIterator(target: any, kind: string) {
     const iterator = Object.create(HeadersIteratorPrototype);
     iterator[INTERNAL] = {
         target,
