@@ -2,7 +2,7 @@
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
     "outDir": "../dest",
-    "rootDir": "."
+    "rootDir": ".",
+    "esModuleInterop": true
   }
- 
 }

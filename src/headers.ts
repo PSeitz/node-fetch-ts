@@ -239,7 +239,8 @@ export default class Headers implements Iterable<readonly [string, string]> {
      * @return  Iterator
      */
     *keys() {
-        for (const key in this[MAP]) {
+        const sortedKeys = Object.keys(this[MAP]).sort();
+        for (const key of sortedKeys) {
             yield key;
         }
         // return createHeadersIterator(this, 'key');
@@ -250,15 +251,15 @@ export default class Headers implements Iterable<readonly [string, string]> {
      *
      * @return  Iterator
      */
-    values() {
-        // for (const key in this[MAP]) {
-        //     yield this[MAP][key];
-        // }
-        return createHeadersIterator(this, 'value');
+    *values() {
+        for (const key in this[MAP]) {
+            yield this[MAP][key];
+        }
+        // return createHeadersIterator(this, 'value');
     }
 
     entries() {
-        return this[Symbol.iterator];
+        return this[Symbol.iterator]();
         // return createHeadersIterator(this, 'value');
     }
 
@@ -269,12 +270,11 @@ export default class Headers implements Iterable<readonly [string, string]> {
      *
      * @return  Iterator
      */
-    [Symbol.iterator]() {
-        // const iter = Object.keys(this[MAP]).map(
-        //     k => [k, this.get(k)!] as const
-        // )[Symbol.iterator];
-        // return iter();
-        return createHeadersIterator(this, 'key+value');
+    *[Symbol.iterator]() {
+        const keys = this.keys();
+        for (const k  of keys){
+            yield [k,this.get(k)!] as const
+        }
     }
 
     /**
@@ -376,12 +376,12 @@ function createHeadersIterator(target: any, kind: string) {
     return iterator;
 }
 
-// Object.defineProperty(HeadersIteratorPrototype, Symbol.toStringTag, {
-// 	value: 'HeadersIterator',
-// 	writable: false,
-// 	enumerable: false,
-// 	configurable: true
-// });
+Object.defineProperty(HeadersIteratorPrototype, Symbol.toStringTag, {
+	value: 'HeadersIterator',
+	writable: false,
+	enumerable: false,
+	configurable: true
+});
 
 /**
  * Create a Headers object from an object of headers, ignoring those that do

@@ -70,50 +70,51 @@ describe("Headers", () => {
 		// ]);
 	});
 
-	// test("should allow iterating through all headers with entries()", () => {
-	// 	const headers = new Headers([
-	// 		["b", "2"],
-	// 		["c", "4"],
-	// 		["a", "1"]
-	// 	]);
-	// 	headers.append("b", "3");
+	test("should allow iterating through all headers with entries()", () => {
+		const headers = new Headers([
+			["b", "2"],
+			["c", "4"],
+			["a", "1"]
+		]);
+		headers.append("b", "3");
 
-	// 	expect(headers.entries()).toBeIterable();
+		let iter = headers.entries();
+		expect(iter).toBeIterable();
+		
+		expect(Array.from(headers.entries())).toEqual([
+			["a", "1"],
+			["b", "2, 3"],
+			["c", "4"]
+		]);
+	});
 
-	// 	// expect(headers.entries()).to.be.iterable.and.to.deep.iterate.over([
-	// 	// 	["a", "1"],
-	// 	// 	["b", "2, 3"],
-	// 	// 	["c", "4"]
-	// 	// ]);
-	// });
+	test("should allow iterating through all headers with keys()", () => {
+		const headers = new Headers([
+			["b", "2"],
+			["c", "4"],
+			["a", "1"]
+		]);
+		headers.append("b", "3");
 
-	// test("should allow iterating through all headers with keys()", () => {
-	// 	const headers = new Headers([
-	// 		["b", "2"],
-	// 		["c", "4"],
-	// 		["a", "1"]
-	// 	]);
-	// 	headers.append("b", "3");
+		expect(headers.keys()).toBeIterable();
+		expect(Array.from(headers.keys())).toEqual(["a", "b", "c"]);
+	});
 
-	// 	expect(headers.keys()).toBeIterable();
-	// 	// expect(headers.keys()).to.be.iterable.and.to.iterate.over(["a", "b", "c"]);
-	// });
+	test("should allow iterating through all headers with values()", () => {
+		const headers = new Headers([
+			["b", "2"],
+			["c", "4"],
+			["a", "1"]
+		]);
+		headers.append("b", "3");
 
-	// test("should allow iterating through all headers with values()", () => {
-	// 	const headers = new Headers([
-	// 		["b", "2"],
-	// 		["c", "4"],
-	// 		["a", "1"]
-	// 	]);
-	// 	headers.append("b", "3");
-
-	// 	expect(headers.values()).toBeIterable();
-	// 	// expect(headers.values()).to.be.iterable.and.to.iterate.over([
-	// 	// 	"1",
-	// 	// 	"2, 3",
-	// 	// 	"4"
-	// 	// ]);
-	// });
+		expect(headers.values()).toBeIterable();
+		expect(Array.from(headers.values())).toEqual([
+			"1",
+			"2, 3",
+			"4"
+		]);
+	});
 
 	// test("should reject illegal header", () => {
 	// 	const headers = new Headers();

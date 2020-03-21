@@ -35,9 +35,15 @@ export default class TestServer {
 	}
 
 	stop() {
-		return promisify(this.server.close);
-		// return new Promise(resolve => this.server.close(resolve));
-		// this.server.close(cb);
+		return new Promise((resolve, reject) => { 
+			this.server.close((err?)=>{
+				if(err){
+					reject(err);
+				}else{
+					resolve();
+				}
+			});
+		});
 	}
 
 	mockResponse(responseHandler: any) {
