@@ -126,7 +126,7 @@ export default class Headers implements Iterable<readonly [string, string]> {
      */
     get(name: string) {
         name = `${name}`;
-        validateName(name);
+        validateName(name); // TODO only required on adding 
         const key = find(this[MAP], name);
         if (key === undefined) {
             return null;
@@ -252,8 +252,8 @@ export default class Headers implements Iterable<readonly [string, string]> {
      * @return  Iterator
      */
     *values() {
-        for (const key in this[MAP]) {
-            yield this[MAP][key];
+        for (const key of this.keys()) {
+            yield this[MAP][key].join(', ');
         }
         // return createHeadersIterator(this, 'value');
     }

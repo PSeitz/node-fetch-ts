@@ -1,5 +1,11 @@
 {
-    // "files": [],
+    // "extends": "./tsconfig-base.json",
+    // "compilerOptions": {
+    //   "noEmit": true,
+    //   "incremental": false,
+    //   "composite": false
+    // },
+    "files": [],
     "references": [
       {
         "path": "./src"
@@ -7,5 +13,5 @@
       {
         "path": "./tests"
       }
-    ]
+    ],
   }
